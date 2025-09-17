@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "StellarIQ",
+    "slug": "stellariq",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.stellariq.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "background-fetch",
+          "remote-notification"
+        ]
+      }
+    },
+    "android": {
+      "package": "com.stellariq.app",
+      "versionCode": 1,
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "WAKE_LOCK"
+      ]
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#ffffff"
+        }
+      ]
+    ],
+    "scheme": "stellariq",
+    "extra": {
+      "apiUrl": "http://192.168.1.74:8000",
+      "googleWebClientId": "your-google-web-client-id.googleusercontent.com"
+    }
+  }
+}
