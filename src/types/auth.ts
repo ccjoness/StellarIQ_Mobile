@@ -5,12 +5,17 @@
 export interface User {
   id: number;
   email: string;
-  username?: string; // Made optional for backward compatibility
-  is_active: boolean;
-  is_verified: boolean;
-  created_at: string;
-  // New backend fields
+  username: string;
+  fullName?: string;
+  isEmailVerified?: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  // Backend fields
   full_name?: string;
+  is_active?: boolean;
+  is_verified?: boolean;
+  created_at?: string;
+  updated_at?: string;
   is_oauth_user?: boolean;
   display_name?: string;
   avatar_url?: string;

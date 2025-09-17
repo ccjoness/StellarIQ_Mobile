@@ -155,3 +155,48 @@ export const shadows = {
     elevation: 8,
   },
 };
+// /* CSS HEX */
+// --dark-moss-green: #606c38ff;
+// --pakistan-green: #283618ff;
+// --cornsilk: #fefae0ff;
+// --earth-yellow: #dda15eff;
+// --tigers-eye: #bc6c25ff;
+//
+// /* CSS HSL */
+// --dark-moss-green: hsla(74, 32%, 32%, 1);
+// --pakistan-green: hsla(88, 38%, 15%, 1);
+// --cornsilk: hsla(52, 94%, 94%, 1);
+// --earth-yellow: hsla(32, 65%, 62%, 1);
+// --tigers-eye: hsla(28, 67%, 44%, 1);
+//
+// /* SCSS HEX */
+// $dark-moss-green: #606c38ff;
+// $pakistan-green: #283618ff;
+// $cornsilk: #fefae0ff;
+// $earth-yellow: #dda15eff;
+// $tigers-eye: #bc6c25ff;
+//
+// /* SCSS HSL */
+// $dark-moss-green: hsla(74, 32%, 32%, 1);
+// $pakistan-green: hsla(88, 38%, 15%, 1);
+// $cornsilk: hsla(52, 94%, 94%, 1);
+// $earth-yellow: hsla(32, 65%, 62%, 1);
+// $tigers-eye: hsla(28, 67%, 44%, 1);
+//
+// /* SCSS RGB */
+// $dark-moss-green: rgba(96, 108, 56, 1);
+// $pakistan-green: rgba(40, 54, 24, 1);
+// $cornsilk: rgba(254, 250, 224, 1);
+// $earth-yellow: rgba(221, 161, 94, 1);
+// $tigers-eye: rgba(188, 108, 37, 1);
+//
+// /* SCSS Gradient */
+// $gradient-top: linear-gradient(0deg, #606c38ff, #283618ff, #fefae0ff, #dda15eff, #bc6c25ff);
+// $gradient-right: linear-gradient(90deg, #606c38ff, #283618ff, #fefae0ff, #dda15eff, #bc6c25ff);
+// $gradient-bottom: linear-gradient(180deg, #606c38ff, #283618ff, #fefae0ff, #dda15eff, #bc6c25ff);
+// $gradient-left: linear-gradient(270deg, #606c38ff, #283618ff, #fefae0ff, #dda15eff, #bc6c25ff);
+// $gradient-top-right: linear-gradient(45deg, #606c38ff, #283618ff, #fefae0ff, #dda15eff, #bc6c25ff);
+// $gradient-bottom-right: linear-gradient(135deg, #606c38ff, #283618ff, #fefae0ff, #dda15eff, #bc6c25ff);
+// $gradient-top-left: linear-gradient(225deg, #606c38ff, #283618ff, #fefae0ff, #dda15eff, #bc6c25ff);
+// $gradient-bottom-left: linear-gradient(315deg, #606c38ff, #283618ff, #fefae0ff, #dda15eff, #bc6c25ff);
+// $gradient-radial: radial-gradient(#606c38ff, #283618ff, #fefae0ff, #dda15eff, #bc6c25ff);

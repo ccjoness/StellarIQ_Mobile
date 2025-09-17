@@ -57,16 +57,17 @@ export interface CandlestickDataPoint {
   high: number;
   low: number;
   close: number;
-  volume?: number;
+  volume: number;
 }
 
 export interface CandlestickChartResponse {
   symbol: string;
-  market_type: string;
   interval: string;
-  hours: number;
-  data_points: number;
-  data: CandlestickDataPoint[];
+  last_refreshed: string;
+  time_zone: string;
+  candlestick_data: CandlestickDataPoint[];
+  indicators?: any;
+  metadata: any;
 }
 
 // Search types
@@ -183,28 +184,156 @@ export interface CryptoPortfolioUpdate {
   average_buy_price?: number;
 }
 
+// Technical Indicator Response Types
+export interface RSIData {
+  timestamp: string;
+  rsi: number;
+}
+
+export interface RSIResponse {
+  symbol: string;
+  interval: string;
+  time_period: number;
+  series_type: string;
+  last_refreshed: string;
+  data: RSIData[];
+  current_condition: 'oversold' | 'overbought' | 'neutral';
+  analysis: string;
+}
+
+export interface MACDData {
+  timestamp: string;
+  macd: number;
+  macd_hist: number;
+  macd_signal: number;
+}
+
+export interface MACDResponse {
+  symbol: string;
+  interval: string;
+  series_type: string;
+  last_refreshed: string;
+  data: MACDData[];
+  current_condition: 'oversold' | 'overbought' | 'neutral';
+  analysis: string;
+}
+
+export interface StochData {
+  timestamp: string;
+  slowk: number;
+  slowd: number;
+}
+
+export interface StochResponse {
+  symbol: string;
+  interval: string;
+  last_refreshed: string;
+  data: StochData[];
+  current_condition: 'oversold' | 'overbought' | 'neutral';
+  analysis: string;
+}
+
+// Market condition types
+export type MarketCondition = 'oversold' | 'overbought' | 'neutral';
+
+// Technical Analysis Summary
+export interface TechnicalAnalysisSummary {
+  symbol: string;
+  rsi_condition?: MarketCondition;
+  macd_condition?: MarketCondition;
+  stoch_condition?: MarketCondition;
+  bbands_condition?: MarketCondition;
+  overall_condition: MarketCondition;
+  confidence_score: number; // 0-1 scale
+  recommendation: string;
+}
+
+export interface BollingerBandsData {
+  timestamp: string;
+  real_upper_band: number;
+  real_middle_band: number;
+  real_lower_band: number;
+}
+
+export interface BollingerBandsResponse {
+  symbol: string;
+  interval: string;
+  time_period: number;
+  series_type: string;
+  last_refreshed: string;
+  data: BollingerBandsData[];
+  current_condition: 'oversold' | 'overbought' | 'neutral';
+  analysis: string;
+}
+
+// Analysis Types
+export interface BulkAnalysisRequest {
+  symbols: string[];
+  asset_type: 'crypto' | 'stock';
+  interval: string;
+}
+
+export interface BulkAnalysisResponse {
+  results: SignalAnalysis[];
+  total_analyzed: number;
+  timestamp: string;
+}
+
+export interface MarketScreenerRequest {
+  conditions: any;
+  asset_type: 'crypto' | 'stock';
+  limit: number;
+}
+
+export interface ScreenerResult {
+  symbol: string;
+  name: string;
+  current_price: number;
+  analysis: SignalAnalysis;
+}
+
+export interface MarketScreenerResponse {
+  results: ScreenerResult[];
+  total_matches: number;
+  conditions: any;
+  timestamp: string;
+}
+
 // Signal types
 export interface TechnicalIndicators {
   rsi_value?: number;
-  rsi_signal?: string;
+  rsi_signal?: 'oversold' | 'overbought' | 'neutral';
   stochastic_k?: number;
   stochastic_d?: number;
-  stochastic_signal?: string;
+  stochastic_signal?: 'oversold' | 'overbought' | 'neutral';
   bb_upper?: number;
   bb_middle?: number;
   bb_lower?: number;
-  bb_signal?: string;
+  bb_signal?: 'oversold' | 'overbought' | 'neutral';
   macd_line?: number;
   macd_signal_line?: number;
   macd_histogram?: number;
-  macd_signal?: string;
+  macd_signal?: 'oversold' | 'overbought' | 'neutral';
+}
+
+export interface Signals {
+  overall_signal: 'oversold' | 'overbought' | 'neutral';
+  confidence: number;
+  rsi_signal: 'oversold' | 'overbought' | 'neutral';
+  macd_signal: 'oversold' | 'overbought' | 'neutral';
+  stochastic_signal: 'oversold' | 'overbought' | 'neutral';
+  bb_signal: 'oversold' | 'overbought' | 'neutral';
+  recommendation: string;
+  analysis_timestamp: string;
 }
 
 export interface SignalAnalysis {
-  signal_type: 'oversold' | 'overbought' | 'neutral';
-  confidence: number;
-  explanation: string;
-  indicators: TechnicalIndicators;
+  signals?: Signals;
+  technical_indicators?: TechnicalIndicators;
+  symbol?: string;
+  asset_type?: 'crypto' | 'stock';
+  interval?: string;
+  analysis_timestamp?: string;
 }
 
 export interface Signal {
@@ -292,6 +421,8 @@ export interface WatchlistResponse {
 export interface TickerDetail {
   ticker: Ticker;
   quote: Quote;
+  signals?: Signals;
+  technical_indicators?: TechnicalIndicators;
   latest_signal?: Signal;
   signal_analysis?: SignalAnalysis;
 }
@@ -306,6 +437,7 @@ export type RootStackParamList = {
   CryptoPortfolio: undefined;
   CryptoCategories: undefined;
   CryptoTrending: undefined;
+  Debug: undefined;
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;

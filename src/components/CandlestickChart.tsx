@@ -71,7 +71,7 @@ export function CandlestickChart({ symbol, marketType }: CandlestickChartProps) 
       );
     }
 
-    if (error || !candlestickData?.data || candlestickData.data.length === 0) {
+    if (error || !candlestickData?.candlestick_data || candlestickData.candlestick_data.length === 0) {
       return (
         <View style={styles.errorContainer}>
           <Text style={[styles.errorText, { color: theme.colors.error }]}>
@@ -81,7 +81,7 @@ export function CandlestickChart({ symbol, marketType }: CandlestickChartProps) 
       );
     }
 
-    const chartData = formatChartData(candlestickData.data);
+    const chartData = formatChartData(candlestickData.candlestick_data);
     
     if (chartData.length === 0) {
       return (
@@ -160,7 +160,7 @@ export function CandlestickChart({ symbol, marketType }: CandlestickChartProps) 
   const renderChartInfo = () => {
     if (!candlestickData) return null;
 
-    const latestCandle = candlestickData.data[0]; // Most recent data point
+    const latestCandle = candlestickData.candlestick_data[0]; // Most recent data point
     if (!latestCandle) return null;
 
     const priceChange = latestCandle.close - latestCandle.open;

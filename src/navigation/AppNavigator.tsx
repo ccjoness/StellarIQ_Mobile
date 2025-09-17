@@ -30,6 +30,9 @@ import {ProfileScreen} from '@/screens/auth/ProfileScreen';
 import {ForgotPasswordScreen} from '@/screens/auth/ForgotPasswordScreen';
 import {ResetPasswordScreen} from '@/screens/auth/ResetPasswordScreen';
 
+// Import debug screen
+import DebugScreen from '@/screens/DebugScreen';
+
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -248,6 +251,16 @@ export function AppNavigator() {
                 component={CryptoTrendingScreen}
                 options={{
                     title: 'Trending Crypto',
+                    headerTitleAlign: 'center',
+                    headerRight: () => <HeaderLogo/>,
+                    headerBackTitle: 'Back',
+                }}
+            />
+            <Stack.Screen
+                name="Debug"
+                component={DebugScreen}
+                options={{
+                    title: 'API Debug',
                     headerTitleAlign: 'center',
                     headerRight: () => <HeaderLogo/>,
                     headerBackTitle: 'Back',

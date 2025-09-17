@@ -17,7 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useTheme } from '@/hooks/useTheme';
 import { apiService } from '@/services/api';
-import { TechnicalIndicatorDataPoint } from '@/types';
+import { TechnicalIndicatorDataPoint, TechnicalAnalysisSummary, MarketCondition } from '@/types';
 import { TECHNICAL_INDICATORS_CONFIG } from '@/constants/config';
 
 interface TechnicalIndicatorChartsProps {
@@ -27,6 +27,33 @@ interface TechnicalIndicatorChartsProps {
 
 const screenWidth = Dimensions.get('window').width;
 const chartWidth = screenWidth - 80; // Account for margins
+
+const getMarketConditionDisplay = (condition: MarketCondition) => {
+  switch (condition) {
+    case 'oversold':
+      return {
+        text: 'OVERSOLD',
+        color: '#10B981', // Green
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        description: 'Potential buying opportunity'
+      };
+    case 'overbought':
+      return {
+        text: 'OVERBOUGHT',
+        color: '#EF4444', // Red
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        description: 'Potential selling opportunity'
+      };
+    case 'neutral':
+    default:
+      return {
+        text: 'NEUTRAL',
+        color: '#6B7280', // Gray
+        backgroundColor: 'rgba(107, 114, 128, 0.1)',
+        description: 'Mixed signals'
+      };
+  }
+};
 
 export function TechnicalIndicatorCharts({ symbol, marketType }: TechnicalIndicatorChartsProps) {
   const { theme } = useTheme();
@@ -39,6 +66,12 @@ export function TechnicalIndicatorCharts({ symbol, marketType }: TechnicalIndica
       TECHNICAL_INDICATORS_CONFIG.DEFAULT_TIMEFRAME, // '1H' timeframe for indicators
       TECHNICAL_INDICATORS_CONFIG.DEFAULT_HOURS // 24 hours
     ),
+    staleTime: TECHNICAL_INDICATORS_CONFIG.REFRESH_INTERVAL, // 1 minute refresh
+  });
+
+  const { data: analysisSummary, isLoading: isAnalysisLoading } = useQuery({
+    queryKey: ['technicalAnalysisSummary', symbol],
+    queryFn: () => apiService.getTechnicalAnalysisSummary(symbol, 'daily'),
     staleTime: TECHNICAL_INDICATORS_CONFIG.REFRESH_INTERVAL, // 1 minute refresh
   });
 
@@ -153,11 +186,16 @@ export function TechnicalIndicatorCharts({ symbol, marketType }: TechnicalIndica
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
         <Text style={[styles.title, { color: theme.colors.text }]}>
-          Technical Indicators (24h • 1min intervals)
+          Technical Indicators (24h)
         </Text>
         <Text style={[styles.errorText, { color: theme.colors.error }]}>
           Unable to load indicator data
         </Text>
+        {error && (
+          <Text style={[styles.errorDetails, { color: theme.colors.textSecondary }]}>
+            {error.message || 'Network error or data unavailable'}
+          </Text>
+        )}
       </View>
     );
   }
@@ -166,11 +204,35 @@ export function TechnicalIndicatorCharts({ symbol, marketType }: TechnicalIndica
   const stochasticData = formatChartData(indicatorData.data, 'stochastic_k');
   const macdData = formatMACDChartData(indicatorData.data);
 
+  const conditionDisplay = analysisSummary ? getMarketConditionDisplay(analysisSummary.overall_condition) : null;
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
       <Text style={[styles.title, { color: theme.colors.text }]}>
         Technical Indicators (24h)
       </Text>
+
+      {/* Market Condition Status */}
+      {conditionDisplay && !isAnalysisLoading && (
+        <View style={[styles.statusContainer, { backgroundColor: conditionDisplay.backgroundColor }]}>
+          <View style={styles.statusHeader}>
+            <Text style={[styles.statusTitle, { color: conditionDisplay.color }]}>
+              Market Status: {conditionDisplay.text}
+            </Text>
+            <Text style={[styles.confidenceText, { color: theme.colors.textSecondary }]}>
+              Confidence: {Math.round((analysisSummary?.confidence_score || 0) * 100)}%
+            </Text>
+          </View>
+          <Text style={[styles.statusDescription, { color: theme.colors.textSecondary }]}>
+            {conditionDisplay.description}
+          </Text>
+          {analysisSummary?.recommendation && (
+            <Text style={[styles.recommendation, { color: theme.colors.text }]}>
+              {analysisSummary.recommendation}
+            </Text>
+          )}
+        </View>
+      )}
       
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.chartsContainer}>
@@ -262,6 +324,39 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 16,
   },
+  statusContainer: {
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  statusHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statusTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  confidenceText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  statusDescription: {
+    fontSize: 14,
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  recommendation: {
+    fontSize: 14,
+    fontWeight: '500',
+    lineHeight: 20,
+  },
   loadingContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -275,6 +370,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginTop: 20,
+  },
+  errorDetails: {
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: 8,
+    paddingHorizontal: 20,
   },
   chartsContainer: {
     flexDirection: 'column',

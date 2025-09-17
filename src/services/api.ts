@@ -23,6 +23,7 @@ import {
   CryptoPortfolioResponse,
   CryptoPortfolioCreate,
   CryptoPortfolioUpdate,
+  TechnicalAnalysisSummary,
 } from '@/types';
 import {
   AuthResponse,
@@ -41,6 +42,79 @@ class ApiService {
 
   constructor() {
     this.baseUrl = API_CONFIG.BASE_URL;
+    console.log('ApiService initialized with baseUrl:', this.baseUrl);
+  }
+
+  // Test connectivity to backend
+  async testConnection(): Promise<boolean> {
+    try {
+      console.log('Testing connection to backend...');
+      const response = await fetch(`${this.baseUrl}/docs`);
+      console.log('Connection test response:', response.status);
+      return response.ok;
+    } catch (error) {
+      console.error('Connection test failed:', error);
+      return false;
+    }
+  }
+
+  // Debug method to test full authentication and API flow
+  async debugApiFlow(): Promise<void> {
+    console.log('=== Starting API Debug Flow ===');
+
+    // Test 1: Basic connectivity
+    console.log('1. Testing basic connectivity...');
+    const connected = await this.testConnection();
+    console.log('Connection result:', connected);
+
+    if (!connected) {
+      console.error('❌ Cannot connect to backend. Check if backend is running and URL is correct.');
+      return;
+    }
+
+    // Test 2: Check authentication status
+    console.log('2. Checking authentication status...');
+    const isAuth = await TokenStorage.isAuthenticated();
+    const token = await TokenStorage.getAccessToken();
+    console.log('Is authenticated:', isAuth);
+    console.log('Has access token:', !!token);
+
+    if (!token) {
+      console.log('❌ No access token found. User needs to login.');
+      return;
+    }
+
+    // Test 3: Try a simple authenticated request
+    console.log('3. Testing authenticated request...');
+    try {
+      const healthResponse = await this.healthCheck();
+      console.log('✅ Health check successful:', healthResponse);
+    } catch (error) {
+      console.error('❌ Health check failed:', error);
+      return;
+    }
+
+    // Test 4: Try stock candlestick chart request
+    console.log('4. Testing stock candlestick chart request...');
+    try {
+      const stockChartData = await this.getCandlestickChart('AAPL', 'stock', '5min', 24);
+      console.log('✅ Stock candlestick chart request successful');
+      console.log('Stock chart data points:', stockChartData.candlestick_data?.length || 0);
+    } catch (error) {
+      console.error('❌ Stock candlestick chart request failed:', error);
+    }
+
+    // Test 5: Try crypto candlestick chart request
+    console.log('5. Testing crypto candlestick chart request...');
+    try {
+      const cryptoChartData = await this.getCandlestickChart('BTC', 'crypto', '5min', 24);
+      console.log('✅ Crypto candlestick chart request successful');
+      console.log('Crypto chart data points:', cryptoChartData.candlestick_data?.length || 0);
+    } catch (error) {
+      console.error('❌ Crypto candlestick chart request failed:', error);
+    }
+
+    console.log('=== API Debug Flow Complete ===');
   }
 
   private async request<T>(
@@ -69,11 +143,11 @@ class ApiService {
     };
 
     try {
-      // console.log(`API Request: ${config.method || 'GET'} ${url}`);
-      // console.log("config",config);
+      console.log(`API Request: ${config.method || 'GET'} ${url}`);
+      console.log("Request config:", JSON.stringify(config, null, 2));
       const response = await fetch(url, config);
 
-      // console.log(`API Response: ${response.status} ${response.statusText}`, response);
+      console.log(`API Response: ${response.status} ${response.statusText}`);
 
       // Handle authentication errors
       if (response.status === 401 && requireAuth) {
@@ -88,9 +162,9 @@ class ApiService {
             // Store new tokens
             await TokenStorage.storeTokens({
               access_token: refreshResponse.access_token,
-              refresh_token: refreshResponse.refresh_token,
+              refresh_token: refreshResponse.refresh_token || refreshToken, // Keep existing refresh token if not provided
               token_type: refreshResponse.token_type,
-              expires_in: refreshResponse.expires_in,
+              expires_in: refreshResponse.expires_in || 1800,
             });
 
             // Retry the original request with new token
@@ -103,6 +177,10 @@ class ApiService {
           }
         } catch (refreshError) {
           console.log('Token refresh failed:', refreshError);
+          // If refresh fails, clear auth and throw error
+          console.log('Authentication failed, clearing stored tokens');
+          await TokenStorage.clearAuth();
+          throw new Error('Authentication required');
         }
 
         // If refresh fails, clear auth and throw error
@@ -115,6 +193,9 @@ class ApiService {
         const errorData = await response.json().catch(() => ({}));
         const errorMessage = errorData.detail || `HTTP ${response.status}`;
         console.error(`API Error: ${errorMessage}`);
+        console.error('Full error response:', errorData);
+        console.error('Response status:', response.status);
+        console.error('Response headers:', response.headers);
         throw new Error(errorMessage);
       }
 
@@ -148,9 +229,9 @@ class ApiService {
       symbol: item.symbol,
       name: item.name || item.symbol,
       market_type: 'stock' as const,
-      exchange: item.exchange,
-      logo_url: item.logo_url,
-      market_cap_rank: item.market_cap_rank,
+      exchange: item.exchange || '',
+      logo_url: item.logo_url || null,
+      market_cap_rank: item.market_cap_rank || null,
     })) || [];
 
     return {
@@ -161,7 +242,7 @@ class ApiService {
   }
 
   async getSearchSuggestions(query: string): Promise<string[]> {
-    // For now, return empty array as this endpoint doesn't exist in current backend
+    // Search suggestions not implemented in current backend
     return [];
   }
 
@@ -174,6 +255,43 @@ class ApiService {
       // Get stock quote from backend
       const stockQuote = await this.request<any>(`/stocks/quote/${symbol}`, {}, true);
 
+      // Get technical analysis if available
+      let signals = {
+        overall_signal: 'neutral' as const,
+        confidence: 0.5,
+        rsi_signal: 'neutral' as const,
+        macd_signal: 'neutral' as const,
+        stochastic_signal: 'neutral' as const,
+        bb_signal: 'neutral' as const,
+        recommendation: 'Hold',
+        analysis_timestamp: new Date().toISOString(),
+      };
+
+      let technicalIndicators = {
+        rsi_value: 50,
+        rsi_signal: 'neutral' as const,
+        stochastic_k: 50,
+        stochastic_d: 50,
+        stochastic_signal: 'neutral' as const,
+        bb_upper: 0,
+        bb_middle: 0,
+        bb_lower: 0,
+        bb_signal: 'neutral' as const,
+        macd_line: 0,
+        macd_signal_line: 0,
+        macd_histogram: 0,
+        macd_signal: 'neutral' as const,
+      };
+
+      try {
+        // Try to get technical analysis
+        const analysis = await this.analyzeSignals(symbol, marketType);
+        signals = analysis.signals || signals;
+        technicalIndicators = analysis.technical_indicators || technicalIndicators;
+      } catch (error) {
+        console.warn('Failed to get technical analysis for', symbol, error);
+      }
+
       // Transform to expected TickerDetail format
       return {
         ticker: {
@@ -181,97 +299,98 @@ class ApiService {
           symbol: stockQuote.symbol || symbol,
           name: stockQuote.name || symbol,
           market_type: 'stock',
-          exchange: stockQuote.exchange,
-          current_price: stockQuote.price,
-          price_change_24h: stockQuote.change,
-          price_change_percentage_24h: stockQuote.change_percent,
-          market_cap: stockQuote.market_cap,
-          volume_24h: stockQuote.volume,
+          exchange: stockQuote.exchange || '',
+          current_price: stockQuote.price || 0,
+          price_change_24h: stockQuote.change || 0,
+          price_change_percentage_24h: stockQuote.change_percent || 0,
+          market_cap: stockQuote.market_cap || 0,
+          volume_24h: stockQuote.volume || 0,
           description: stockQuote.description || `${symbol} stock information`,
-          logo_url: stockQuote.logo_url,
-          website_url: stockQuote.website_url,
+          logo_url: stockQuote.logo_url || null,
+          website_url: stockQuote.website_url || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          last_data_update: stockQuote.last_updated,
+          last_data_update: stockQuote.last_updated || new Date().toISOString(),
         },
         quote: {
           symbol: stockQuote.symbol || symbol,
-          current_price: stockQuote.price,
-          price_change_24h: stockQuote.change,
-          price_change_percentage_24h: stockQuote.change_percent,
-          volume_24h: stockQuote.volume,
-          market_cap: stockQuote.market_cap,
-          high_24h: stockQuote.high,
-          low_24h: stockQuote.low,
-          last_updated: stockQuote.last_updated,
+          current_price: stockQuote.price || 0,
+          price_change_24h: stockQuote.change || 0,
+          price_change_percentage_24h: stockQuote.change_percent || 0,
+          volume_24h: stockQuote.volume || 0,
+          market_cap: stockQuote.market_cap || 0,
+          high_24h: stockQuote.high || 0,
+          low_24h: stockQuote.low || 0,
+          last_updated: stockQuote.last_updated || new Date().toISOString(),
         },
-        signals: {
-          overall_signal: 'neutral',
-          confidence: 0.5,
-          rsi_signal: 'neutral',
-          macd_signal: 'neutral',
-          stochastic_signal: 'neutral',
-          bb_signal: 'neutral',
-          recommendation: 'Hold',
-          analysis_timestamp: new Date().toISOString(),
-        },
-        technical_indicators: {
-          rsi_value: 50,
-          rsi_signal: 'neutral',
-          stochastic_k: 50,
-          stochastic_d: 50,
-          stochastic_signal: 'neutral',
-          bb_upper: 0,
-          bb_middle: 0,
-          bb_lower: 0,
-          bb_signal: 'neutral',
-          macd_line: 0,
-          macd_signal_line: 0,
-          macd_histogram: 0,
-          macd_signal: 'neutral',
-        }
+        signals,
+        technical_indicators: technicalIndicators,
       };
     } else {
       // For crypto, use crypto endpoints
       const quote = await this.getCryptoQuote(symbol);
+
+      let signals = {
+        overall_signal: 'neutral' as const,
+        confidence: 0.5,
+        rsi_signal: 'neutral' as const,
+        macd_signal: 'neutral' as const,
+        stochastic_signal: 'neutral' as const,
+        bb_signal: 'neutral' as const,
+        recommendation: 'Hold',
+        analysis_timestamp: new Date().toISOString(),
+      };
+
+      let technicalIndicators = {
+        rsi_value: 50,
+        rsi_signal: 'neutral' as const,
+        stochastic_k: 50,
+        stochastic_d: 50,
+        stochastic_signal: 'neutral' as const,
+        bb_upper: 0,
+        bb_middle: 0,
+        bb_lower: 0,
+        bb_signal: 'neutral' as const,
+        macd_line: 0,
+        macd_signal_line: 0,
+        macd_histogram: 0,
+        macd_signal: 'neutral' as const,
+      };
+
+      try {
+        // Try to get technical analysis
+        const analysis = await this.analyzeSignals(symbol, marketType);
+        signals = analysis.signals || signals;
+        technicalIndicators = analysis.technical_indicators || technicalIndicators;
+      } catch (error) {
+        console.warn('Failed to get technical analysis for', symbol, error);
+      }
+
       return {
         ticker: {
           id: 0,
           symbol: symbol,
-          name: quote.name,
+          name: quote.name || symbol,
           market_type: 'crypto',
-          current_price: quote.price,
-          price_change_24h: quote.change_24h,
-          price_change_percentage_24h: quote.change_percent_24h,
-          volume_24h: quote.volume_24h,
-          market_cap: quote.market_cap,
+          current_price: quote.price || 0,
+          price_change_24h: quote.change_24h || 0,
+          price_change_percentage_24h: quote.change_percent_24h || 0,
+          volume_24h: quote.volume_24h || 0,
+          market_cap: quote.market_cap || 0,
           created_at: new Date().toISOString(),
-          updated_at: quote.last_updated,
+          updated_at: quote.last_updated || new Date().toISOString(),
         },
         quote: {
           symbol: quote.symbol,
-          current_price: quote.price,
-          price_change_24h: quote.change_24h,
-          price_change_percentage_24h: quote.change_percent_24h,
-          volume_24h: quote.volume_24h,
-          market_cap: quote.market_cap,
-          last_updated: quote.last_updated,
+          current_price: quote.price || 0,
+          price_change_24h: quote.change_24h || 0,
+          price_change_percentage_24h: quote.change_percent_24h || 0,
+          volume_24h: quote.volume_24h || 0,
+          market_cap: quote.market_cap || 0,
+          last_updated: quote.last_updated || new Date().toISOString(),
         },
-        technical_indicators: {
-          rsi_value: 50,
-          rsi_signal: 'neutral',
-          stochastic_k: 50,
-          stochastic_d: 50,
-          stochastic_signal: 'neutral',
-          bb_upper: 0,
-          bb_middle: 0,
-          bb_lower: 0,
-          bb_signal: 'neutral',
-          macd_line: 0,
-          macd_signal_line: 0,
-          macd_histogram: 0,
-          macd_signal: 'neutral',
-        }
+        signals,
+        technical_indicators: technicalIndicators,
       };
     }
   }
@@ -281,18 +400,33 @@ class ApiService {
     marketType: 'crypto' | 'stock'
   ): Promise<Quote> {
     if (marketType === 'stock') {
-      return this.request<Quote>(`/stocks/quote/${symbol}`, {}, true);
+      const stockQuote = await this.request<any>(`/stocks/quote/${symbol}`, {}, true);
+
+      // Transform backend response to expected Quote format
+      return {
+        symbol: stockQuote.symbol || symbol,
+        current_price: stockQuote.price || 0,
+        price_change_24h: stockQuote.change || 0,
+        price_change_percentage_24h: stockQuote.change_percent || 0,
+        volume_24h: stockQuote.volume || 0,
+        market_cap: stockQuote.market_cap || 0,
+        high_24h: stockQuote.high || 0,
+        low_24h: stockQuote.low || 0,
+        last_updated: stockQuote.last_updated || new Date().toISOString(),
+      };
     } else {
       // For crypto, use crypto quote endpoint
       const cryptoQuote = await this.getCryptoQuote(symbol);
       return {
         symbol: cryptoQuote.symbol,
-        current_price: cryptoQuote.price,
-        price_change_24h: cryptoQuote.change_24h,
-        price_change_percentage_24h: cryptoQuote.change_percent_24h,
-        volume_24h: cryptoQuote.volume_24h,
-        market_cap: cryptoQuote.market_cap,
-        last_updated: cryptoQuote.last_updated,
+        current_price: cryptoQuote.price || 0,
+        price_change_24h: cryptoQuote.change_24h || 0,
+        price_change_percentage_24h: cryptoQuote.change_percent_24h || 0,
+        volume_24h: cryptoQuote.volume_24h || 0,
+        market_cap: cryptoQuote.market_cap || 0,
+        high_24h: 0, // Not available in crypto quote
+        low_24h: 0, // Not available in crypto quote
+        last_updated: cryptoQuote.last_updated || new Date().toISOString(),
       };
     }
   }
@@ -346,14 +480,142 @@ class ApiService {
     timeframe: string = 'daily',
     hours: number = 24
   ): Promise<TechnicalIndicatorHistoryResponse> {
-    // Map timeframe to backend format
-    const interval = timeframe === '1min' ? 'daily' : timeframe;
+    try {
+      // Map timeframe to backend format
+      const interval = timeframe === '1min' ? 'daily' : timeframe;
 
-    // Get comprehensive technical analysis
-    return this.request<TechnicalIndicatorHistoryResponse>(
-      `/indicators/analysis/${symbol}?interval=${interval}`,
+      // Get individual indicators to combine into historical data
+      const [rsiResponse, macdResponse, stochResponse] = await Promise.all([
+        this.getRSI(symbol, interval),
+        this.getMACD(symbol, interval),
+        this.getStochastic(symbol, interval)
+      ]);
+
+      // Combine the data into the expected format
+      const combinedData: TechnicalIndicatorDataPoint[] = [];
+
+      // Use RSI data as the base timeline since it's most commonly available
+      if (rsiResponse.data && rsiResponse.data.length > 0) {
+        rsiResponse.data.forEach((rsiPoint: any, index: number) => {
+          const macdPoint = macdResponse.data?.[index];
+          const stochPoint = stochResponse.data?.[index];
+
+          combinedData.push({
+            timestamp: rsiPoint.timestamp,
+            rsi: rsiPoint.rsi,
+            stochastic_k: stochPoint?.slowk,
+            stochastic_d: stochPoint?.slowd,
+            macd_line: macdPoint?.macd,
+            macd_signal_line: macdPoint?.macd_signal,
+            macd_histogram: macdPoint?.macd_hist,
+            price: 0 // We don't have price data in indicators, set to 0
+          });
+        });
+      }
+
+      return {
+        symbol: symbol,
+        market_type: marketType,
+        timeframe: interval,
+        data: combinedData
+      };
+    } catch (error) {
+      console.warn('Failed to get technical indicators for', symbol, error);
+      // Return empty data structure on error
+      return {
+        symbol: symbol,
+        market_type: marketType,
+        timeframe: timeframe,
+        data: []
+      };
+    }
+  }
+
+  // Individual technical indicator endpoints
+  async getRSI(
+    symbol: string,
+    interval: string = 'daily',
+    timePeriod: number = 14,
+    seriesType: string = 'close'
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      interval: interval,
+      time_period: timePeriod.toString(),
+      series_type: seriesType
+    });
+    return this.request<any>(`/indicators/rsi/${symbol}?${params}`, {}, true);
+  }
+
+  async getMACD(
+    symbol: string,
+    interval: string = 'daily',
+    fastPeriod: number = 12,
+    slowPeriod: number = 26,
+    signalPeriod: number = 9,
+    seriesType: string = 'close'
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      interval: interval,
+      fastperiod: fastPeriod.toString(),
+      slowperiod: slowPeriod.toString(),
+      signalperiod: signalPeriod.toString(),
+      series_type: seriesType
+    });
+    return this.request<any>(`/indicators/macd/${symbol}?${params}`, {}, true);
+  }
+
+  async getStochastic(
+    symbol: string,
+    interval: string = 'daily',
+    fastkPeriod: number = 5,
+    slowkPeriod: number = 3,
+    slowdPeriod: number = 3,
+    slowkMatype: number = 0,
+    slowdMatype: number = 0
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      interval: interval,
+      fastkperiod: fastkPeriod.toString(),
+      slowkperiod: slowkPeriod.toString(),
+      slowdperiod: slowdPeriod.toString(),
+      slowkmatype: slowkMatype.toString(),
+      slowdmatype: slowdMatype.toString()
+    });
+    return this.request<any>(`/indicators/stoch/${symbol}?${params}`, {}, true);
+  }
+
+  async getBollingerBands(
+    symbol: string,
+    interval: string = 'daily',
+    timePeriod: number = 20,
+    seriesType: string = 'close',
+    nbdevup: number = 2,
+    nbdevdn: number = 2,
+    matype: number = 0
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      interval: interval,
+      time_period: timePeriod.toString(),
+      series_type: seriesType,
+      nbdevup: nbdevup.toString(),
+      nbdevdn: nbdevdn.toString(),
+      matype: matype.toString()
+    });
+    return this.request<any>(`/indicators/bbands/${symbol}?${params}`, {}, true);
+  }
+
+  async getTechnicalAnalysisSummary(
+    symbol: string,
+    interval: string = 'daily'
+  ): Promise<TechnicalAnalysisSummary> {
+    const params = new URLSearchParams({
+      interval,
+    });
+
+    return this.request<TechnicalAnalysisSummary>(
+      `/indicators/analysis/${symbol}?${params}`,
       {},
-      true // require auth
+      true
     );
   }
 
@@ -363,17 +625,58 @@ class ApiService {
     interval: string = '1min',
     hours: number = 24
   ): Promise<CandlestickChartResponse> {
+    console.log(`Getting candlestick chart for ${symbol}, interval: ${interval}, marketType: ${marketType}`);
+
     // Use charts endpoint for candlestick data
     const params = new URLSearchParams({
       interval: interval === '1min' ? '5min' : interval, // Backend uses 5min as minimum
+      market_type: marketType, // Pass market type to backend
       include_volume: 'true'
     });
 
-    return this.request<CandlestickChartResponse>(
-      `/charts/candlestick/${symbol}?${params}`,
-      {},
-      true
-    );
+    console.log(`Candlestick API URL: ${this.baseUrl}/charts/candlestick/${symbol}?${params}`);
+
+    try {
+      const result = await this.request<CandlestickChartResponse>(
+        `/charts/candlestick/${symbol}?${params}`,
+        {},
+        true
+      );
+      console.log('Candlestick chart data received successfully');
+      console.log(`Market type: ${marketType}, Data points: ${result.candlestick_data?.length || 0}`);
+      return result;
+    } catch (error) {
+      console.error('Error getting candlestick chart:', error);
+      throw error;
+    }
+  }
+
+  // Additional chart endpoints
+  async getComparisonChart(
+    symbols: string[],
+    interval: string = 'daily',
+    normalize: boolean = false,
+    outputsize: string = 'compact'
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      symbols: symbols.join(','),
+      interval: interval,
+      normalize: normalize.toString(),
+      outputsize: outputsize
+    });
+    return this.request<any>(`/charts/comparison?${params}`, {}, true);
+  }
+
+  async getMultiSymbolCharts(
+    symbols: string[],
+    interval: string = 'daily',
+    includeIndicators: boolean = false
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      interval: interval,
+      include_indicators: includeIndicators.toString()
+    });
+    return this.request<any>(`/charts/multi/${symbols.join(',')}?${params}`, {}, true);
   }
 
   // Signal endpoints
@@ -393,6 +696,48 @@ class ApiService {
       {},
       true
     );
+  }
+
+  // Additional analysis endpoints
+  async bulkAnalysis(
+    symbols: string[],
+    assetType: 'crypto' | 'stock' = 'stock',
+    interval: string = 'daily'
+  ): Promise<any> {
+    const requestBody = {
+      symbols: symbols,
+      asset_type: assetType,
+      interval: interval
+    };
+    return this.request<any>('/analysis/bulk', {
+      method: 'POST',
+      body: JSON.stringify(requestBody),
+    }, true);
+  }
+
+  async analyzeWatchlist(
+    interval: string = 'daily'
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      interval: interval
+    });
+    return this.request<any>(`/analysis/watchlist?${params}`, {}, true);
+  }
+
+  async marketScreener(
+    conditions: any,
+    assetType: 'crypto' | 'stock' = 'stock',
+    limit: number = 50
+  ): Promise<any> {
+    const requestBody = {
+      conditions: conditions,
+      asset_type: assetType,
+      limit: limit
+    };
+    return this.request<any>('/analysis/screener', {
+      method: 'POST',
+      body: JSON.stringify(requestBody),
+    }, true);
   }
 
   // Crypto-specific endpoints
@@ -446,6 +791,49 @@ class ApiService {
     return this.request<CryptoTrendingResponse>('/crypto/trending', {}, true);
   }
 
+  // Additional crypto data endpoints
+  async getCryptoDailyData(
+    symbol: string,
+    market: string = 'USD'
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      market: market
+    });
+    return this.request<any>(`/crypto/daily/${symbol}?${params}`, {}, true);
+  }
+
+  async getCryptoIntradayData(
+    symbol: string,
+    market: string = 'USD',
+    interval: string = '5min'
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      market: market,
+      interval: interval
+    });
+    return this.request<any>(`/crypto/intraday/${symbol}?${params}`, {}, true);
+  }
+
+  async getCryptoWeeklyData(
+    symbol: string,
+    market: string = 'USD'
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      market: market
+    });
+    return this.request<any>(`/crypto/weekly/${symbol}?${params}`, {}, true);
+  }
+
+  async getCryptoMonthlyData(
+    symbol: string,
+    market: string = 'USD'
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      market: market
+    });
+    return this.request<any>(`/crypto/monthly/${symbol}?${params}`, {}, true);
+  }
+
   // Crypto Portfolio endpoints
   async getCryptoPortfolio(): Promise<CryptoPortfolioResponse> {
     return this.request<CryptoPortfolioResponse>('/crypto/portfolio', {}, true);
@@ -481,17 +869,39 @@ class ApiService {
 
   // Authentication methods
   async login(data: LoginRequest): Promise<AuthResponse> {
-    return this.request<AuthResponse>('/auth/login', {
+    const response = await this.request<any>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({ email: data.email, password: data.password }),
     });
+
+    // Transform backend response to expected AuthResponse format
+    return {
+      access_token: response.access_token,
+      refresh_token: response.refresh_token || '',
+      token_type: response.token_type || 'bearer',
+      expires_in: response.expires_in || 1800,
+    };
   }
 
   async register(data: RegisterRequest): Promise<AuthResponse> {
-    return this.request<AuthResponse>('/auth/register', {
+    // Backend register returns UserResponse, not tokens
+    const userResponse = await this.request<any>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        full_name: data.fullName || data.username,
+      }),
     });
+
+    // After registration, automatically login to get tokens
+    const loginResponse = await this.login({
+      email: data.email,
+      password: data.password,
+    });
+
+    return loginResponse;
   }
 
   async loginWithGoogle(data: GoogleOAuthRequest): Promise<AuthResponse> {
@@ -500,10 +910,17 @@ class ApiService {
   }
 
   async refreshToken(refreshToken: string): Promise<AuthResponse> {
-    return this.request<AuthResponse>('/auth/refresh', {
+    const response = await this.request<any>('/auth/refresh', {
       method: 'POST',
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
+
+    return {
+      access_token: response.access_token,
+      refresh_token: response.refresh_token || refreshToken,
+      token_type: response.token_type || 'bearer',
+      expires_in: response.expires_in || 1800,
+    };
   }
 
   async logout(): Promise<{ message: string }> {
@@ -513,7 +930,18 @@ class ApiService {
   }
 
   async getCurrentUser(): Promise<User> {
-    return this.request<User>('/auth/me', {}, true);
+    const response = await this.request<any>('/auth/me', {}, true);
+
+    // Transform backend user response to expected User format
+    return {
+      id: response.id,
+      email: response.email,
+      username: response.username,
+      fullName: response.full_name || response.username,
+      isEmailVerified: response.is_active || false,
+      createdAt: response.created_at,
+      updatedAt: response.updated_at,
+    };
   }
 
   async updateProfile(data: UserUpdateRequest): Promise<User> {
@@ -527,17 +955,13 @@ class ApiService {
   }
 
   async requestPasswordReset(data: PasswordResetRequest): Promise<{ message: string }> {
-    return this.request<{ message: string }>('/auth/password-reset-request', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    // Password reset not implemented in current backend
+    throw new Error('Password reset not yet implemented');
   }
 
   async resetPassword(data: PasswordResetConfirm): Promise<{ message: string }> {
-    return this.request<{ message: string }>('/auth/password-reset-confirm', {
-      method: 'POST',
-      body: JSON.stringify({ token: data.token, new_password: data.new_password }),
-    });
+    // Password reset not implemented in current backend
+    throw new Error('Password reset not yet implemented');
   }
 
   async verifyEmail(token: string): Promise<{ message: string }> {
@@ -612,6 +1036,48 @@ class ApiService {
   async updateWatchlistItem(itemId: number, data: Partial<WatchlistItemCreate>): Promise<WatchlistItem> {
     // Update not implemented in current backend
     throw new Error('Watchlist item update not yet implemented');
+  }
+
+  // Additional favorites/watchlist endpoints
+  async checkIfFavorite(symbol: string, assetType: 'stock' | 'crypto'): Promise<{ is_favorite: boolean }> {
+    const params = new URLSearchParams({ asset_type: assetType });
+    return this.request<{ is_favorite: boolean }>(`/favorites/check/${symbol}?${params}`, {}, true);
+  }
+
+  async getFavoritesStats(): Promise<{ total_favorites: number; stock_favorites: number; crypto_favorites: number }> {
+    return this.request<{ total_favorites: number; stock_favorites: number; crypto_favorites: number }>('/favorites/stats', {}, true);
+  }
+
+  async getFavoritesByType(assetType: 'stock' | 'crypto', includeQuotes: boolean = true): Promise<WatchlistResponse> {
+    const params = new URLSearchParams({
+      asset_type: assetType,
+      include_quotes: includeQuotes.toString()
+    });
+
+    const favoritesResponse = await this.request<any>(`/favorites/?${params}`, {}, true);
+
+    // Transform favorites response to watchlist format
+    const watchlistItems = favoritesResponse.favorites?.map((fav: any) => ({
+      id: fav.id,
+      ticker_id: fav.id,
+      symbol: fav.symbol,
+      name: fav.name || fav.symbol,
+      market_type: fav.asset_type,
+      exchange: fav.exchange || '',
+      alert_enabled: false,
+      alert_price_above: null,
+      alert_price_below: null,
+      created_at: fav.created_at,
+      // Include quote data if available
+      current_price: fav.current_price || 0,
+      price_change_24h: fav.price_change_24h || 0,
+      price_change_percentage_24h: fav.price_change_percentage_24h || 0,
+    })) || [];
+
+    return {
+      items: watchlistItems,
+      total: watchlistItems.length,
+    };
   }
 }
 

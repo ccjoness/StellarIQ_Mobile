@@ -62,6 +62,10 @@ export default function HomeScreen() {
     (navigation as any).navigate(screenName);
   };
 
+  const handleNavigateToDebug = () => {
+    (navigation as any).navigate('Debug');
+  };
+
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -167,6 +171,22 @@ export default function HomeScreen() {
           </TouchableOpacity>
         ))}
       </View>
+
+      {/* Debug Section - Only show in development */}
+      {__DEV__ && (
+        <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+            Development Tools
+          </Text>
+          <TouchableOpacity
+            style={[styles.debugButton, { backgroundColor: theme.colors.error }]}
+            onPress={handleNavigateToDebug}
+          >
+            <Ionicons name="bug" size={24} color="white" />
+            <Text style={styles.debugButtonText}>API Debug Console</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -282,5 +302,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     padding: 16,
+  },
+  debugButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  debugButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
