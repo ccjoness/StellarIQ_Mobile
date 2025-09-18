@@ -9,6 +9,7 @@ import {
   TickerDetail,
   HistoricalDataResponse,
   TechnicalIndicatorHistoryResponse,
+  TechnicalIndicatorDataPoint,
   SignalAnalysis,
   WatchlistResponse,
   WatchlistItemCreate,
@@ -905,7 +906,7 @@ class ApiService {
         email: data.email,
         password: data.password,
         agreed_to_disclaimer: data.agreed_to_disclaimer,
-        full_name: data.fullName || data.username,
+        full_name: data.full_name || data.username,
       }),
     });
 
@@ -964,8 +965,13 @@ class ApiService {
   }
 
   async changePassword(data: ChangePasswordRequest): Promise<{ message: string }> {
-    // Password change not implemented in current backend
-    throw new Error('Password change not yet implemented');
+    return this.request<{ message: string }>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        current_password: data.current_password,
+        new_password: data.new_password,
+      }),
+    }, true);
   }
 
   async requestPasswordReset(data: PasswordResetRequest): Promise<{ message: string }> {
@@ -1004,6 +1010,7 @@ class ApiService {
     return {
       items: watchlistItems,
       total: watchlistItems.length,
+      device_id: 'mobile-app', // Default device ID for mobile app
     };
   }
 
@@ -1029,8 +1036,6 @@ class ApiService {
       market_type: favoriteResponse.asset_type,
       exchange: favoriteResponse.exchange || '',
       alert_enabled: false,
-      alert_price_above: null,
-      alert_price_below: null,
       created_at: favoriteResponse.created_at,
     };
   }
@@ -1091,6 +1096,7 @@ class ApiService {
     return {
       items: watchlistItems,
       total: watchlistItems.length,
+      device_id: 'mobile-app', // Default device ID for mobile app
     };
   }
 }

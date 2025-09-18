@@ -17,7 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useTheme } from '@/hooks/useTheme';
 import { apiService } from '@/services/api';
-import { TechnicalIndicatorDataPoint, TechnicalAnalysisSummary, MarketCondition } from '@/types';
+import { TechnicalIndicatorDataPoint, MarketCondition } from '@/types';
 import { TECHNICAL_INDICATORS_CONFIG } from '@/constants/config';
 
 interface TechnicalIndicatorChartsProps {

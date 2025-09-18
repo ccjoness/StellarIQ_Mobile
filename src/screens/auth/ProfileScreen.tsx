@@ -46,6 +46,26 @@ export function ProfileScreen() {
         setPasswordData(prev => ({...prev, [field]: value}));
     };
 
+    const getPasswordStrength = (password: string) => {
+        if (password.length === 0) return { strength: 0, label: '', color: theme.colors.textSecondary };
+
+        let score = 0;
+        const checks = {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            lowercase: /[a-z]/.test(password),
+            numbers: /\d/.test(password),
+            special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+        };
+
+        score = Object.values(checks).filter(Boolean).length;
+
+        if (score <= 2) return { strength: score, label: 'Weak', color: theme.colors.error };
+        if (score <= 3) return { strength: score, label: 'Fair', color: '#FF8C00' };
+        if (score <= 4) return { strength: score, label: 'Good', color: '#32CD32' };
+        return { strength: score, label: 'Strong', color: '#228B22' };
+    };
+
     const handleSaveProfile = async () => {
         try {
             clearError();
@@ -79,11 +99,38 @@ export function ProfileScreen() {
             return;
         }
 
+        // Additional password strength validation
+        const hasUpperCase = /[A-Z]/.test(passwordData.newPassword);
+        const hasLowerCase = /[a-z]/.test(passwordData.newPassword);
+        const hasNumbers = /\d/.test(passwordData.newPassword);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(passwordData.newPassword);
+
+        if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
+            Alert.alert(
+                'Weak Password',
+                'Password should contain at least one uppercase letter, one lowercase letter, and one number for better security.',
+                [
+                    {text: 'Continue Anyway', onPress: () => proceedWithPasswordChange()},
+                    {text: 'Cancel', style: 'cancel'}
+                ]
+            );
+            return;
+        }
+
         if (passwordData.newPassword !== passwordData.confirmPassword) {
             Alert.alert('Error', 'New passwords do not match');
             return;
         }
 
+        if (passwordData.currentPassword === passwordData.newPassword) {
+            Alert.alert('Error', 'New password must be different from current password');
+            return;
+        }
+
+        proceedWithPasswordChange();
+    };
+
+    const proceedWithPasswordChange = async () => {
         try {
             clearError();
             await changePassword({
@@ -96,7 +143,13 @@ export function ProfileScreen() {
                 newPassword: '',
                 confirmPassword: '',
             });
-            Alert.alert('Success', 'Password changed successfully');
+            Alert.alert(
+                'Success',
+                'Password changed successfully. You may need to log in again on other devices.',
+                [
+                    {text: 'OK', onPress: () => {}}
+                ]
+            );
         } catch (error) {
             // Error is handled by the auth context
         }
@@ -327,7 +380,7 @@ export function ProfileScreen() {
                         <Text style={[styles.sectionTitle, {color: theme.colors.text}]}>Security</Text>
                         {!isChangingPassword && (
                             <TouchableOpacity onPress={() => setIsChangingPassword(true)}>
-                                <Text style={styles.editButton}>Change Password</Text>
+                                <Text style={[styles.editButton, {color: theme.colors.primary}]}>Change Password</Text>
                             </TouchableOpacity>
                         )}
                     </View>
@@ -362,6 +415,31 @@ export function ProfileScreen() {
                                     secureTextEntry
                                     editable={!isLoading}
                                 />
+                                {passwordData.newPassword.length > 0 && (
+                                    <View style={styles.passwordStrengthContainer}>
+                                        <View style={styles.passwordStrengthBar}>
+                                            {[1, 2, 3, 4, 5].map((level) => {
+                                                const strength = getPasswordStrength(passwordData.newPassword);
+                                                return (
+                                                    <View
+                                                        key={level}
+                                                        style={[
+                                                            styles.passwordStrengthSegment,
+                                                            {
+                                                                backgroundColor: level <= strength.strength
+                                                                    ? strength.color
+                                                                    : theme.colors.border
+                                                            }
+                                                        ]}
+                                                    />
+                                                );
+                                            })}
+                                        </View>
+                                        <Text style={[styles.passwordStrengthText, {color: getPasswordStrength(passwordData.newPassword).color}]}>
+                                            {getPasswordStrength(passwordData.newPassword).label}
+                                        </Text>
+                                    </View>
+                                )}
                             </View>
 
                             <View style={styles.inputContainer}>
@@ -576,5 +654,29 @@ const styles = StyleSheet.create({
     themeOptionText: {
         fontSize: 14,
         fontWeight: '600',
+    },
+    passwordStrengthContainer: {
+        marginTop: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    passwordStrengthBar: {
+        flexDirection: 'row',
+        flex: 1,
+        height: 4,
+        marginRight: 12,
+        gap: 2,
+    },
+    passwordStrengthSegment: {
+        flex: 1,
+        height: 4,
+        borderRadius: 2,
+    },
+    passwordStrengthText: {
+        fontSize: 12,
+        fontWeight: '500',
+        minWidth: 50,
+        textAlign: 'right',
     },
 });

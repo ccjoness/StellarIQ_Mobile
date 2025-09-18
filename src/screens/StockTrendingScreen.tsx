@@ -5,7 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
+
   RefreshControl,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';

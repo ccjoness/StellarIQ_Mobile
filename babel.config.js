@@ -20,7 +20,7 @@ module.exports = function (api) {
           },
         },
       ],
-      'react-native-reanimated/plugin', // This must be last
+      'react-native-worklets/plugin', // This replaces react-native-reanimated/plugin in v4
     ],
   };
 };

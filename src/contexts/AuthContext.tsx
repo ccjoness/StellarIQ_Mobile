@@ -172,7 +172,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         token_type: loginResponse.token_type,
         expires_in: loginResponse.expires_in || 1800,
       }});
-      dispatch({ type: 'SET_USER', payload: response });
+      // AuthResponse doesn't have all User fields, so we need to handle this properly
+      if (response.user) {
+        dispatch({ type: 'SET_USER', payload: response.user });
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Registration failed';
       dispatch({ type: 'SET_ERROR', payload: message });
@@ -200,11 +203,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       dispatch({ type: 'SET_TOKENS', payload: {
         access_token: response.access_token,
-        refresh_token: response.refresh_token,
+        refresh_token: response.refresh_token || '',
         token_type: response.token_type,
-        expires_in: response.expires_in,
+        expires_in: response.expires_in || 1800,
       }});
-      dispatch({ type: 'SET_USER', payload: response.user });
+      if (response.user) {
+        dispatch({ type: 'SET_USER', payload: response.user });
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Google login failed';
       dispatch({ type: 'SET_ERROR', payload: message });
@@ -250,16 +255,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Update stored tokens
       await TokenStorage.storeTokens({
         access_token: response.access_token,
-        refresh_token: response.refresh_token,
+        refresh_token: response.refresh_token || '',
         token_type: response.token_type,
-        expires_in: response.expires_in,
+        expires_in: response.expires_in || 1800,
       });
 
       dispatch({ type: 'SET_TOKENS', payload: {
         access_token: response.access_token,
-        refresh_token: response.refresh_token,
+        refresh_token: response.refresh_token || '',
         token_type: response.token_type,
-        expires_in: response.expires_in,
+        expires_in: response.expires_in || 1800,
       }});
     } catch (error) {
       console.error('Error refreshing token:', error);

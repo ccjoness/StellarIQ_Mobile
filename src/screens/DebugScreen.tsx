@@ -2,14 +2,13 @@
  * Debug screen for testing API connectivity and authentication
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { ApiService } from '@/services/api';
