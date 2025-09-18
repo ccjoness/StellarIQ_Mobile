@@ -956,12 +956,43 @@ class ApiService {
       isEmailVerified: response.is_active || false,
       createdAt: response.created_at,
       updatedAt: response.updated_at,
+      // Profile fields
+      full_name: response.full_name,
+      timezone: response.timezone,
+      preferred_currency: response.preferred_currency,
+      email_notifications: response.email_notifications,
+      push_notifications: response.push_notifications,
+      is_oauth_user: response.is_oauth_user,
+      agreed_to_disclaimer: response.agreed_to_disclaimer,
+      disclaimer_agreed_at: response.disclaimer_agreed_at,
     };
   }
 
   async updateProfile(data: UserUpdateRequest): Promise<User> {
-    // Profile update not implemented in current backend
-    throw new Error('Profile update not yet implemented');
+    const response = await this.request<any>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }, true);
+
+    // Transform backend user response to expected User format
+    return {
+      id: response.id,
+      email: response.email,
+      username: response.username,
+      fullName: response.full_name || response.username,
+      isEmailVerified: response.is_active || false,
+      createdAt: response.created_at,
+      updatedAt: response.updated_at,
+      // Profile fields
+      full_name: response.full_name,
+      timezone: response.timezone,
+      preferred_currency: response.preferred_currency,
+      email_notifications: response.email_notifications,
+      push_notifications: response.push_notifications,
+      is_oauth_user: response.is_oauth_user,
+      agreed_to_disclaimer: response.agreed_to_disclaimer,
+      disclaimer_agreed_at: response.disclaimer_agreed_at,
+    };
   }
 
   async changePassword(data: ChangePasswordRequest): Promise<{ message: string }> {

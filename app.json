@@ -8,9 +8,9 @@
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",
     "splash": {
-      "image": "./assets/icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#1a1a2e"
+      "image": "./assets/splash.svg",
+      "resizeMode": "cover",
+      "backgroundColor": "#1a3a5a"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -19,6 +19,12 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.stellariq.app",
       "buildNumber": "1",
+      "splash": {
+        "image": "./assets/splash.svg",
+        "resizeMode": "cover",
+        "backgroundColor": "#1a3a5a",
+        "tabletImage": "./assets/splash.svg"
+      },
       "infoPlist": {
         "UIBackgroundModes": [
           "background-fetch",
@@ -29,11 +35,24 @@
     "android": {
       "package": "com.stellariq.app",
       "versionCode": 1,
+      "compileSdkVersion": 34,
+      "targetSdkVersion": 34,
+      "splash": {
+        "image": "./assets/splash.svg",
+        "resizeMode": "cover",
+        "backgroundColor": "#1a3a5a"
+      },
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
-        "WAKE_LOCK"
-      ]
+        "WAKE_LOCK",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#1a3a5a"
+      }
     },
     "web": {
       "bundler": "metro"
@@ -50,7 +69,10 @@
     "scheme": "stellariq",
     "extra": {
       "apiUrl": "http://192.168.1.74:8000",
-      "googleWebClientId": "your-google-web-client-id.googleusercontent.com"
+      "googleWebClientId": "your-google-web-client-id.googleusercontent.com",
+      "eas": {
+        "projectId": "2f38aa9b-5f7a-497e-bfad-3bd8e3ecdaaa"
+      }
     }
   }
 }
