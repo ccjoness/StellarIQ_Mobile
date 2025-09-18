@@ -7,11 +7,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash.svg",
-      "resizeMode": "cover",
-      "backgroundColor": "#1a3a5a"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -20,10 +15,10 @@
       "bundleIdentifier": "com.stellariq.app",
       "buildNumber": "1",
       "splash": {
-        "image": "./assets/splash.svg",
-        "resizeMode": "cover",
+        "image": "./assets/icon.png",
+        "resizeMode": "contain",
         "backgroundColor": "#1a3a5a",
-        "tabletImage": "./assets/splash.svg"
+        "tabletImage": "./assets/icon.png"
       },
       "infoPlist": {
         "UIBackgroundModes": [
@@ -35,11 +30,9 @@
     "android": {
       "package": "com.stellariq.app",
       "versionCode": 1,
-      "compileSdkVersion": 34,
-      "targetSdkVersion": 34,
       "splash": {
-        "image": "./assets/splash.svg",
-        "resizeMode": "cover",
+        "image": "./assets/icon.png",
+        "resizeMode": "contain",
         "backgroundColor": "#1a3a5a"
       },
       "permissions": [
