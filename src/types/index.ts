@@ -437,6 +437,8 @@ export type RootStackParamList = {
   CryptoPortfolio: undefined;
   CryptoCategories: undefined;
   CryptoTrending: undefined;
+  StockCategories: undefined;
+  StockTrending: undefined;
   Debug: undefined;
   Login: undefined;
   Register: undefined;
@@ -451,6 +453,7 @@ export type TabParamList = {
   Search: undefined;
   Watchlist: undefined;
   Profile: undefined;
+  CryptoTrending: undefined;
 };
 
 // Theme types

@@ -23,6 +23,10 @@ import CryptoPortfolioScreen from '@/screens/CryptoPortfolioScreen';
 import CryptoCategoriesScreen from '@/screens/CryptoCategoriesScreen';
 import CryptoTrendingScreen from '@/screens/CryptoTrendingScreen';
 
+// Import stock screens
+import StockCategoriesScreen from '@/screens/StockCategoriesScreen';
+import StockTrendingScreen from '@/screens/StockTrendingScreen';
+
 // Import auth screens
 import {LoginScreen} from '@/screens/auth/LoginScreen';
 import {RegisterScreen} from '@/screens/auth/RegisterScreen';
@@ -251,6 +255,26 @@ export function AppNavigator() {
                 component={CryptoTrendingScreen}
                 options={{
                     title: 'Trending Crypto',
+                    headerTitleAlign: 'center',
+                    headerRight: () => <HeaderLogo/>,
+                    headerBackTitle: 'Back',
+                }}
+            />
+            <Stack.Screen
+                name="StockCategories"
+                component={StockCategoriesScreen}
+                options={{
+                    title: 'Stock Categories',
+                    headerTitleAlign: 'center',
+                    headerRight: () => <HeaderLogo/>,
+                    headerBackTitle: 'Back',
+                }}
+            />
+            <Stack.Screen
+                name="StockTrending"
+                component={StockTrendingScreen}
+                options={{
+                    title: 'Trending Stocks',
                     headerTitleAlign: 'center',
                     headerRight: () => <HeaderLogo/>,
                     headerBackTitle: 'Back',

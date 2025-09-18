@@ -14,19 +14,23 @@ import { useTheme } from '@/hooks/useTheme';
 import { ApiService } from '@/services/api';
 import { FavoriteButton } from '@/components/FavoriteButton';
 
-interface CryptoCategories {
-  major: string[];
-  defi: string[];
-  gaming: string[];
-  layer1: string[];
-  meme: string[];
-  privacy: string[];
+interface StockCategories {
+  technology: string[];
+  healthcare: string[];
+  financial: string[];
+  energy: string[];
+  consumer: string[];
+  industrial: string[];
+  utilities: string[];
+  materials: string[];
+  realestate: string[];
+  communication: string[];
 }
 
-export default function CryptoCategoriesScreen() {
+export default function StockCategoriesScreen() {
   const { theme } = useTheme();
   const navigation = useNavigation();
-  const [categories, setCategories] = useState<CryptoCategories | null>(null);
+  const [categories, setCategories] = useState<StockCategories | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -38,11 +42,12 @@ export default function CryptoCategoriesScreen() {
 
   const loadCategories = async () => {
     try {
-      const data = await apiService.getCryptoCategories();
+      // Use the dedicated stock categories endpoint
+      const data = await apiService.getStockCategories();
       setCategories(data.categories);
     } catch (error) {
       console.error('Error loading categories:', error);
-      Alert.alert('Error', 'Failed to load crypto categories');
+      Alert.alert('Error', 'Failed to load stock categories');
     } finally {
       setLoading(false);
     }
@@ -54,46 +59,90 @@ export default function CryptoCategoriesScreen() {
     setRefreshing(false);
   };
 
-  const handleCryptoPress = (symbol: string) => {
+  const handleStockPress = (symbol: string) => {
     (navigation as any).navigate('TickerDetail', { 
       symbol, 
-      market_type: 'crypto' 
+      market_type: 'stock' 
     });
   };
 
   const getCategoryColor = (categoryName: string) => {
     const colors = {
-      major: '#FFD700',
-      defi: '#00D4AA',
-      gaming: '#FF6B6B',
-      layer1: '#4ECDC4',
-      meme: '#FFA726',
-      privacy: '#9C27B0',
+      technology: '#007AFF',
+      healthcare: '#34C759',
+      financial: '#FF9500',
+      energy: '#FF3B30',
+      consumer: '#AF52DE',
+      industrial: '#5856D6',
+      utilities: '#FF2D92',
+      materials: '#8E8E93',
+      realestate: '#00C7BE',
+      communication: '#30B0C7',
     };
     return colors[categoryName as keyof typeof colors] || theme.colors.primary;
   };
 
+  const getCategoryIcon = (categoryName: string) => {
+    const icons = {
+      technology: 'laptop-outline',
+      healthcare: 'medical-outline',
+      financial: 'card-outline',
+      energy: 'flash-outline',
+      consumer: 'storefront-outline',
+      industrial: 'construct-outline',
+      utilities: 'water-outline',
+      materials: 'cube-outline',
+      realestate: 'home-outline',
+      communication: 'call-outline',
+    };
+    return icons[categoryName as keyof typeof icons] || 'business-outline';
+  };
+
   const getCategoryDescription = (categoryName: string) => {
     const descriptions = {
-      major: 'Top market cap cryptocurrencies',
-      defi: 'Decentralized Finance tokens',
-      gaming: 'Gaming and metaverse tokens',
-      layer1: 'Layer 1 blockchain protocols',
-      meme: 'Meme and community tokens',
-      privacy: 'Privacy-focused cryptocurrencies',
+      technology: 'Technology and software companies',
+      healthcare: 'Healthcare and pharmaceutical companies',
+      financial: 'Banks and financial services',
+      energy: 'Oil, gas and renewable energy',
+      consumer: 'Consumer goods and retail',
+      industrial: 'Manufacturing and industrial companies',
+      utilities: 'Electric, gas and water utilities',
+      materials: 'Mining and chemical companies',
+      realestate: 'Real estate investment trusts',
+      communication: 'Telecom and media companies',
     };
     return descriptions[categoryName as keyof typeof descriptions] || '';
+  };
+
+  const getCategoryDisplayName = (categoryName: string) => {
+    const displayNames = {
+      technology: 'Technology',
+      healthcare: 'Healthcare',
+      financial: 'Financial',
+      energy: 'Energy',
+      consumer: 'Consumer Goods',
+      industrial: 'Industrial',
+      utilities: 'Utilities',
+      materials: 'Materials',
+      realestate: 'Real Estate',
+      communication: 'Communication',
+    };
+    return displayNames[categoryName as keyof typeof displayNames] || categoryName;
   };
 
   const renderCategory = (categoryName: string, symbols: string[]) => (
     <View key={categoryName} style={[styles.categoryCard, { backgroundColor: theme.colors.surface }]}>
       <View style={styles.categoryHeader}>
         <View style={[styles.categoryIcon, { backgroundColor: getCategoryColor(categoryName) }]}>
-          <Text style={styles.categoryIconText}>{categoryName.charAt(0).toUpperCase()}</Text>
+          <Ionicons 
+            name={getCategoryIcon(categoryName) as any} 
+            size={20} 
+            color="white" 
+          />
         </View>
         <View style={styles.categoryInfo}>
           <Text style={[styles.categoryTitle, { color: theme.colors.text }]}>
-            {categoryName.charAt(0).toUpperCase() + categoryName.slice(1)}
+            {getCategoryDisplayName(categoryName)}
           </Text>
           <Text style={[styles.categoryDescription, { color: theme.colors.textSecondary }]}>
             {getCategoryDescription(categoryName)}
@@ -109,7 +158,7 @@ export default function CryptoCategoriesScreen() {
           <View key={symbol} style={styles.symbolItem}>
             <TouchableOpacity
               style={[styles.symbolChip, { backgroundColor: theme.colors.background }]}
-              onPress={() => handleCryptoPress(symbol)}
+              onPress={() => handleStockPress(symbol)}
             >
               <Text style={[styles.symbolText, { color: theme.colors.text }]}>{symbol}</Text>
               <Ionicons
@@ -121,7 +170,7 @@ export default function CryptoCategoriesScreen() {
             </TouchableOpacity>
             <FavoriteButton
               symbol={symbol}
-              marketType="crypto"
+              marketType="stock"
               size={16}
               style={styles.symbolFavoriteButton}
             />
@@ -146,9 +195,9 @@ export default function CryptoCategoriesScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <View style={styles.header}>
-          <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Crypto Categories</Text>
+          <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Stock Categories</Text>
           <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
-            Explore cryptocurrencies by category
+            Explore stocks by industry sector
           </Text>
         </View>
 
@@ -203,11 +252,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
-  },
-  categoryIconText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   categoryInfo: {
     flex: 1,

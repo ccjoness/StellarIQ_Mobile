@@ -740,6 +740,19 @@ class ApiService {
     }, true);
   }
 
+  // Stock-specific endpoints
+  async getStockPopular(): Promise<any> {
+    return this.request<any>('/stocks/popular', {}, true);
+  }
+
+  async getStockCategories(): Promise<{ categories: any }> {
+    return this.request<{ categories: any }>('/stocks/categories', {}, true);
+  }
+
+  async getStockTrending(): Promise<any> {
+    return this.request<any>('/stocks/trending', {}, true);
+  }
+
   // Crypto-specific endpoints
   async getCryptoPopular(): Promise<CryptoPopularResponse> {
     return this.request<CryptoPopularResponse>('/crypto/popular', {}, true);
@@ -891,6 +904,7 @@ class ApiService {
         username: data.username,
         email: data.email,
         password: data.password,
+        agreed_to_disclaimer: data.agreed_to_disclaimer,
         full_name: data.fullName || data.username,
       }),
     });

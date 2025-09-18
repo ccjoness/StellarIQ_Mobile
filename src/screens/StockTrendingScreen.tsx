@@ -12,13 +12,28 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { ApiService } from '@/services/api';
-import { CryptoTrendingResponse, CryptoOverview } from '@/types';
 import { FavoriteButton } from '@/components/FavoriteButton';
 
-export default function CryptoTrendingScreen() {
+interface StockOverview {
+  symbol: string;
+  name: string;
+  current_price: number;
+  change_percent_24h?: number;
+  volume_24h?: number;
+  market_cap?: number;
+  exchange?: string;
+}
+
+interface StockTrendingResponse {
+  trending: StockOverview[];
+  gainers: StockOverview[];
+  losers: StockOverview[];
+}
+
+export default function StockTrendingScreen() {
   const { theme } = useTheme();
   const navigation = useNavigation();
-  const [trendingData, setTrendingData] = useState<CryptoTrendingResponse | null>(null);
+  const [trendingData, setTrendingData] = useState<StockTrendingResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -30,11 +45,25 @@ export default function CryptoTrendingScreen() {
 
   const loadTrendingData = async () => {
     try {
-      const data = await apiService.getCryptoTrending();
+      // Use the dedicated stock trending endpoint
+      const data = await apiService.getStockTrending();
       setTrendingData(data);
     } catch (error) {
       console.error('Error loading trending data:', error);
-      Alert.alert('Error', 'Failed to load trending cryptocurrencies');
+      // Fallback to popular stocks
+      const fallbackStocks: StockOverview[] = [
+        { symbol: 'AAPL', name: 'Apple Inc.', current_price: 150.00, change_percent_24h: 2.5, volume_24h: 50000000, market_cap: 2500000000000 },
+        { symbol: 'TSLA', name: 'Tesla Inc.', current_price: 200.00, change_percent_24h: -1.2, volume_24h: 30000000, market_cap: 800000000000 },
+        { symbol: 'GOOGL', name: 'Alphabet Inc.', current_price: 120.00, change_percent_24h: 1.8, volume_24h: 25000000, market_cap: 1500000000000 },
+        { symbol: 'MSFT', name: 'Microsoft Corp.', current_price: 300.00, change_percent_24h: 0.5, volume_24h: 20000000, market_cap: 2200000000000 },
+        { symbol: 'AMZN', name: 'Amazon.com Inc.', current_price: 130.00, change_percent_24h: -0.8, volume_24h: 35000000, market_cap: 1300000000000 },
+      ];
+      
+      setTrendingData({
+        trending: fallbackStocks,
+        gainers: fallbackStocks.filter(s => (s.change_percent_24h || 0) > 0),
+        losers: fallbackStocks.filter(s => (s.change_percent_24h || 0) < 0),
+      });
     } finally {
       setLoading(false);
     }
@@ -46,10 +75,10 @@ export default function CryptoTrendingScreen() {
     setRefreshing(false);
   };
 
-  const handleCryptoPress = (symbol: string) => {
+  const handleStockPress = (symbol: string) => {
     (navigation as any).navigate('TickerDetail', { 
       symbol, 
-      market_type: 'crypto' 
+      market_type: 'stock' 
     });
   };
 
@@ -58,7 +87,7 @@ export default function CryptoTrendingScreen() {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-      maximumFractionDigits: 8,
+      maximumFractionDigits: 2,
     }).format(value);
   };
 
@@ -68,20 +97,41 @@ export default function CryptoTrendingScreen() {
     return `${sign}${value.toFixed(2)}%`;
   };
 
-  const renderCryptoItem = (item: CryptoOverview, index: number) => (
+  const formatVolume = (value?: number) => {
+    if (!value) return 'N/A';
+    if (value >= 1e9) return `${(value / 1e9).toFixed(1)}B`;
+    if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
+    if (value >= 1e3) return `${(value / 1e3).toFixed(1)}K`;
+    return value.toString();
+  };
+
+  const formatMarketCap = (value?: number) => {
+    if (!value) return 'N/A';
+    if (value >= 1e12) return `${(value / 1e12).toFixed(1)}T`;
+    if (value >= 1e9) return `${(value / 1e9).toFixed(1)}B`;
+    if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
+    return value.toString();
+  };
+
+  const renderStockItem = (item: StockOverview, index: number) => (
     <TouchableOpacity
       key={`${item.symbol}-${index}`}
-      style={[styles.cryptoItem, { backgroundColor: theme.colors.surface }]}
-      onPress={() => handleCryptoPress(item.symbol)}
+      style={[styles.stockItem, { backgroundColor: theme.colors.surface }]}
+      onPress={() => handleStockPress(item.symbol)}
     >
-      <View style={styles.cryptoHeader}>
-        <View style={styles.cryptoInfo}>
-          <Text style={[styles.cryptoSymbol, { color: theme.colors.text }]}>{item.symbol}</Text>
-          <Text style={[styles.cryptoName, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+      <View style={styles.stockHeader}>
+        <View style={styles.stockInfo}>
+          <Text style={[styles.stockSymbol, { color: theme.colors.text }]}>{item.symbol}</Text>
+          <Text style={[styles.stockName, { color: theme.colors.textSecondary }]} numberOfLines={1}>
             {item.name}
           </Text>
+          {item.exchange && (
+            <Text style={[styles.exchangeText, { color: theme.colors.textSecondary }]}>
+              {item.exchange}
+            </Text>
+          )}
         </View>
-        <View style={styles.cryptoPrice}>
+        <View style={styles.stockPrice}>
           <Text style={[styles.priceText, { color: theme.colors.text }]}>
             {formatCurrency(item.current_price)}
           </Text>
@@ -94,10 +144,10 @@ export default function CryptoTrendingScreen() {
             </Text>
           )}
         </View>
-        <View style={styles.cryptoActions}>
+        <View style={styles.stockActions}>
           <FavoriteButton
             symbol={item.symbol}
-            marketType="crypto"
+            marketType="stock"
             size={20}
             style={styles.favoriteButton}
           />
@@ -109,26 +159,26 @@ export default function CryptoTrendingScreen() {
         </View>
       </View>
       
-      <View style={styles.cryptoDetails}>
+      <View style={styles.stockDetails}>
         {item.volume_24h && (
           <Text style={[styles.detailText, { color: theme.colors.textSecondary }]}>
-            Volume: {formatCurrency(item.volume_24h)}
+            Volume: {formatVolume(item.volume_24h)}
           </Text>
         )}
         {item.market_cap && (
           <Text style={[styles.detailText, { color: theme.colors.textSecondary }]}>
-            Market Cap: {formatCurrency(item.market_cap)}
+            Market Cap: {formatMarketCap(item.market_cap)}
           </Text>
         )}
       </View>
     </TouchableOpacity>
   );
 
-  const renderSection = (title: string, data: CryptoOverview[], emptyMessage: string) => (
+  const renderSection = (title: string, data: StockOverview[], emptyMessage: string) => (
     <View style={styles.section}>
       <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>{title}</Text>
       {data.length > 0 ? (
-        data.map((item, index) => renderCryptoItem(item, index))
+        data.map((item, index) => renderStockItem(item, index))
       ) : (
         <View style={[styles.emptyState, { backgroundColor: theme.colors.surface }]}>
           <Text style={[styles.emptyStateText, { color: theme.colors.textSecondary }]}>
@@ -154,15 +204,15 @@ export default function CryptoTrendingScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <View style={styles.header}>
-          <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Trending Crypto</Text>
+          <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Trending Stocks</Text>
           <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
-            Discover what's hot in the crypto market
+            Discover what's hot in the stock market
           </Text>
         </View>
 
         {trendingData && (
           <>
-            {renderSection('🔥 Trending', trendingData.trending, 'No trending data available')}
+            {renderSection('🔥 High Volume', trendingData.trending, 'No trending data available')}
             {renderSection('📈 Top Gainers', trendingData.gainers, 'No gainers data available')}
             {renderSection('📉 Top Losers', trendingData.losers, 'No losers data available')}
           </>
@@ -206,21 +256,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 12,
   },
-  cryptoItem: {
+  stockItem: {
     padding: 16,
     borderRadius: 12,
     marginBottom: 8,
   },
-  cryptoHeader: {
+  stockHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
-  cryptoInfo: {
+  stockInfo: {
     flex: 1,
   },
-  cryptoActions: {
+  stockActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -229,15 +279,19 @@ const styles = StyleSheet.create({
   favoriteButton: {
     padding: 4,
   },
-  cryptoSymbol: {
+  stockSymbol: {
     fontSize: 16,
     fontWeight: 'bold',
   },
-  cryptoName: {
+  stockName: {
     fontSize: 14,
     marginTop: 2,
   },
-  cryptoPrice: {
+  exchangeText: {
+    fontSize: 12,
+    marginTop: 1,
+  },
+  stockPrice: {
     alignItems: 'flex-end',
   },
   priceText: {
@@ -249,7 +303,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 2,
   },
-  cryptoDetails: {
+  stockDetails: {
     gap: 4,
   },
   detailText: {

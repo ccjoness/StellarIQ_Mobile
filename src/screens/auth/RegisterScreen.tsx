@@ -15,6 +15,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NavigationProp } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
@@ -37,6 +38,7 @@ export function RegisterScreen() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreedToDisclaimer, setAgreedToDisclaimer] = useState(false);
 
   const updateFormData = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -68,6 +70,11 @@ export function RegisterScreen() {
       return false;
     }
 
+    if (!agreedToDisclaimer) {
+      Alert.alert('Error', 'Please agree to the educational disclaimer to continue');
+      return false;
+    }
+
     return true;
   };
 
@@ -82,6 +89,7 @@ export function RegisterScreen() {
         email: formData.email.trim(),
         password: formData.password,
         username: formData.fullName.trim() || formData.email.split('@')[0], // Use fullName as username, or email prefix as fallback
+        agreed_to_disclaimer: agreedToDisclaimer,
         full_name: formData.fullName.trim() || undefined,
       });
       // Navigation will be handled by the auth state change
@@ -222,10 +230,42 @@ export function RegisterScreen() {
             </View>
           </View>
 
+          {/* Educational Disclaimer Checkbox */}
           <TouchableOpacity
-            style={[styles.registerButton, { backgroundColor: theme.colors.primary }, isLoading && styles.disabledButton]}
-            onPress={handleRegister}
+            style={styles.disclaimerContainer}
+            onPress={() => setAgreedToDisclaimer(!agreedToDisclaimer)}
             disabled={isLoading}
+          >
+            <View style={[
+              styles.checkbox,
+              {
+                borderColor: theme.colors.border,
+                backgroundColor: agreedToDisclaimer ? theme.colors.primary : 'transparent'
+              }
+            ]}>
+              {agreedToDisclaimer && (
+                <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+              )}
+            </View>
+            <View style={styles.disclaimerTextContainer}>
+              <Text style={[styles.disclaimerText, { color: theme.colors.text }]}>
+                I understand that StellarIQ is for{' '}
+                <Text style={[styles.disclaimerBold, { color: theme.colors.primary }]}>
+                  educational purposes only
+                </Text>
+                {' '}and that market data may be delayed or inaccurate. I will not make trading or investment decisions based solely on this app and will consult with qualified financial advisors for investment advice.
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.registerButton,
+              { backgroundColor: theme.colors.primary },
+              (isLoading || !agreedToDisclaimer) && styles.disabledButton
+            ]}
+            onPress={handleRegister}
+            disabled={isLoading || !agreedToDisclaimer}
           >
             {isLoading ? (
               <ActivityIndicator color="#FFFFFF" />
@@ -341,6 +381,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     // color will be set dynamically via theme
+  },
+  disclaimerContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+    paddingHorizontal: 4,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderRadius: 4,
+    marginRight: 12,
+    marginTop: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  disclaimerTextContainer: {
+    flex: 1,
+  },
+  disclaimerText: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  disclaimerBold: {
+    fontWeight: '600',
   },
   registerButton: {
     borderRadius: 8,

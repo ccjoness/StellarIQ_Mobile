@@ -24,6 +24,9 @@ export interface User {
   email_notifications?: boolean;
   push_notifications?: boolean;
   last_login?: string;
+  // Disclaimer agreement fields
+  agreed_to_disclaimer?: boolean;
+  disclaimer_agreed_at?: string;
 }
 
 export interface AuthTokens {
@@ -42,6 +45,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   username: string;
+  agreed_to_disclaimer: boolean;
   // Optional fields for future compatibility
   full_name?: string;
   timezone?: string;

@@ -3,7 +3,7 @@
  */
 
 
-import { useState, useEffect } from 'react';
+// import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,32 +16,21 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useTheme } from '@/hooks/useTheme';
 import { FavoriteButton } from '@/components/FavoriteButton';
-import { ApiService } from '@/services/api';
+// import { ApiService } from '@/services/api';
 
 export default function HomeScreen() {
   const { theme } = useTheme();
   const navigation = useNavigation();
-  const [popularCryptos, setPopularCryptos] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
+  //
+  // const apiService = new ApiService();
 
-  const apiService = new ApiService();
-
-  useEffect(() => {
-    loadPopularCryptos();
-  }, []);
-
-  const loadPopularCryptos = async () => {
-    try {
-      const data = await apiService.getCryptoPopular();
-      setPopularCryptos(data.popular_cryptos.slice(0, 8)); // Show top 8
-    } catch (error) {
-      console.error('Error loading popular cryptos:', error);
-      // Fallback to hardcoded list
-      setPopularCryptos(['BTC', 'ETH', 'BNB', 'XRP', 'ADA', 'SOL', 'DOT', 'AVAX']);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const popularCryptos = [
+    { symbol: 'BTC', name: 'Bitcoin', market_type: 'crypto' as const },
+    { symbol: 'ETH', name: 'Ethereum', market_type: 'crypto' as const },
+    { symbol: 'BNB', name: 'Binance Coin', market_type: 'crypto' as const },
+    { symbol: 'XRP', name: 'Ripple', market_type: 'crypto' as const },
+  ];
 
   const popularTickers = [
     { symbol: 'AAPL', name: 'Apple Inc.', market_type: 'stock' as const },
@@ -54,13 +43,10 @@ export default function HomeScreen() {
     (navigation as any).navigate('TickerDetail', { symbol, market_type });
   };
 
-  const handleCryptoPress = (symbol: string) => {
-    handleTickerPress(symbol, 'crypto');
-  };
-
-  const handleNavigateToScreen = (screenName: string) => {
+    const handleNavigateToScreen = (screenName: string) => {
     (navigation as any).navigate(screenName);
   };
+
 
   const handleNavigateToDebug = () => {
     (navigation as any).navigate('Debug');
@@ -78,63 +64,23 @@ export default function HomeScreen() {
         <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
           Your intelligent trading companion
         </Text>
-      </View>
 
-      {/* Crypto Quick Actions */}
-      <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-          Crypto Hub
-        </Text>
-        <View style={styles.quickActions}>
-          <TouchableOpacity
-            style={[styles.quickActionButton, { backgroundColor: theme.colors.primary }]}
-            onPress={() => handleNavigateToScreen('CryptoPortfolio')}
-          >
-            <Ionicons name="wallet" size={24} color="white" />
-            <Text style={styles.quickActionText}>Portfolio</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.quickActionButton, { backgroundColor: theme.colors.secondary }]}
-            onPress={() => handleNavigateToScreen('CryptoCategories')}
-          >
-            <Ionicons name="grid" size={24} color="white" />
-            <Text style={styles.quickActionText}>Categories</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.quickActionButton, { backgroundColor: theme.colors.warning }]}
-            onPress={() => handleNavigateToScreen('CryptoTrending')}
-          >
-            <Ionicons name="trending-up" size={24} color="white" />
-            <Text style={styles.quickActionText}>Trending</Text>
-          </TouchableOpacity>
+        {/* Educational Disclaimer */}
+        <View style={[styles.disclaimer, { backgroundColor: theme.colors.warning + '20', borderColor: theme.colors.warning }]}>
+          <Ionicons name="warning-outline" size={20} color={theme.colors.warning} />
+          <View style={styles.disclaimerText}>
+            <Text style={[styles.disclaimerTitle, { color: theme.colors.warning }]}>
+              Educational Purpose Only
+            </Text>
+            <Text style={[styles.disclaimerBody, { color: theme.colors.text }]}>
+              This app is for educational purposes only. Market data may be delayed or inaccurate.
+              Do not make trading or investment decisions based on this information.
+              Always consult with a qualified financial advisor.
+            </Text>
+          </View>
         </View>
       </View>
-
-      {/* Popular Cryptocurrencies */}
-      <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-          Popular Cryptocurrencies
-        </Text>
-        {loading ? (
-          <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>
-            Loading...
-          </Text>
-        ) : (
-          <View style={styles.cryptoGrid}>
-            {popularCryptos.map((symbol) => (
-              <TouchableOpacity
-                key={symbol}
-                style={[styles.cryptoChip, { backgroundColor: theme.colors.background }]}
-                onPress={() => handleCryptoPress(symbol)}
-              >
-                <Text style={[styles.cryptoSymbol, { color: theme.colors.text }]}>{symbol}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
+      
 
       {/* Popular Stocks */}
       <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
@@ -170,6 +116,70 @@ export default function HomeScreen() {
             </View>
           </TouchableOpacity>
         ))}
+        <TouchableOpacity
+          style={[styles.popularButton, { backgroundColor: theme.colors.primary }]}
+          onPress={() => handleNavigateToScreen('StockTrending')}
+        >
+          <Ionicons name="trending-up" size={24} color="white" />
+          <Text style={styles.popularButtonText}>View Trending Stocks</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.popularButton, { backgroundColor: theme.colors.primary }]}
+          onPress={() => handleNavigateToScreen('StockCategories')}
+        >
+          <Ionicons name="grid" size={24} color="white" />
+          <Text style={styles.popularButtonText}>View Stock Categories</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Popular Cryptocurrencies */}
+      <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          Popular Cryptocurrencies
+        </Text>
+        {popularCryptos.map((crypto) => (
+          <TouchableOpacity
+            key={`${crypto.symbol}-${crypto.market_type}`}
+            style={styles.tickerItem}
+            onPress={() => handleTickerPress(crypto.symbol, crypto.market_type)}
+          >
+            <View style={styles.tickerInfo}>
+              <Text style={[styles.tickerSymbol, { color: theme.colors.text }]}>
+                {crypto.symbol}
+              </Text>
+              <Text style={[styles.tickerName, { color: theme.colors.textSecondary }]}>
+                {crypto.name}
+              </Text>
+            </View>
+            <View style={styles.tickerActions}>
+              <FavoriteButton
+                symbol={crypto.symbol}
+                marketType={crypto.market_type}
+                size={20}
+                style={styles.favoriteButton}
+              />
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={theme.colors.textSecondary}
+              />
+            </View>
+          </TouchableOpacity>
+        ))}
+        <TouchableOpacity
+          style={[styles.popularButton, { backgroundColor: theme.colors.primary }]}
+          onPress={() => handleNavigateToScreen('CryptoTrending')}
+        >
+          <Ionicons name="trending-up" size={24} color="white" />
+          <Text style={styles.popularButtonText}>View Trending Crypto</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.popularButton, { backgroundColor: theme.colors.primary }]}
+          onPress={() => handleNavigateToScreen('CryptoCategories')}
+        >
+          <Ionicons name="grid" size={24} color="white" />
+          <Text style={styles.popularButtonText}>View Crypto Categories</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Debug Section - Only show in development */}
@@ -207,6 +217,27 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
+  },
+  disclaimer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 16,
+    gap: 8,
+  },
+  disclaimerText: {
+    flex: 1,
+  },
+  disclaimerTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  disclaimerBody: {
+    fontSize: 12,
+    lineHeight: 16,
   },
   section: {
     margin: 16,
@@ -282,26 +313,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 4,
   },
-  cryptoGrid: {
+  popularButton:{
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  cryptoChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  cryptoSymbol: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  loadingText: {
-    fontSize: 14,
-    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 16,
+    borderRadius: 12,
+    gap: 8,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  popularButtonText:{
+   color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
   debugButton: {
     flexDirection: 'row',
