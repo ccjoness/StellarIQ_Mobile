@@ -3,9 +3,9 @@
  */
 
 import { createContext, useContext, useEffect, useReducer, ReactNode } from 'react';
-import { apiService } from '../services/api';
-import { TokenStorage } from '../services/tokenStorage';
-import { GoogleSignInService } from '../services/googleSignIn';
+import { apiService } from '@/services/api';
+import { TokenStorage } from '@/services/tokenStorage';
+
 import {
   AuthState,
   AuthContextType,
@@ -14,7 +14,7 @@ import {
   RegisterRequest,
   ChangePasswordRequest,
   UserUpdateRequest,
-} from '../types/auth';
+} from '@/types/auth';
 
 // Initial state
 const initialState: AuthState = {
@@ -227,9 +227,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } catch (error) {
         console.log('Backend logout failed, continuing with local logout:', error);
       }
-
-      // Sign out from Google if signed in
-      await GoogleSignInService.signOut();
 
       // Clear local storage
       await TokenStorage.clearAuth();

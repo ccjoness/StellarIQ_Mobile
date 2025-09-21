@@ -2,39 +2,24 @@
   "expo": {
     "name": "StellarIQ",
     "slug": "stellariq",
-    "version": "1.0.0",
     "sdkVersion": "54.0.0",
+    "platforms": ["android"],
+    "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "icon": "./assets/icon-1024-1024.png",
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.stellariq.app",
-      "buildNumber": "1",
-      "splash": {
-        "image": "./assets/splash-4096-4096.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#1a3a5a",
-        "tabletImage": "./assets/icon-1024-1024.png"
-      },
-      "infoPlist": {
-        "UIBackgroundModes": [
-          "background-fetch",
-          "remote-notification"
-        ]
-      }
+    "splash": {
+      "image": "../assets/splash-4096-4096.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a3a5a"
     },
     "android": {
       "package": "com.stellariq.app",
       "versionCode": 1,
-      "splash": {
-        "image": "./assets/splash-4096-4096.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#1a3a5a"
-      },
+      "backgroundColor": "#1a3a5a",
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
@@ -43,8 +28,8 @@
         "ACCESS_NETWORK_STATE"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon-1024-1024.png",
-        "backgroundColor": "#1a3a5a"
+        "foregroundImage": "./assets/android/adaptive-icon/foreground.png",
+        "backgroundImage": "./assets/android/adaptive-icon/background.png"
       }
     },
     "web": {
@@ -58,15 +43,10 @@
         },
         "expo-splash-screen",
         {
-          "ios": {
-            "backgroundColor": "#1a3a5a",
-            "image": "./assets/splash-4096-4096.png",
-            "resizeMode": "cover"
-          },
           "android": {
             "backgroundColor": "#1a3a5a",
             "image": "./assets/splash-4096-4096.png",
-            "imageWidth": 150
+            "resizeMode": "contain"
           }
         }
       ],
@@ -75,7 +55,6 @@
     "scheme": "stellariq",
     "extra": {
       "apiUrl": "http://192.168.1.74:8000",
-      "googleWebClientId": "your-google-web-client-id.googleusercontent.com",
       "eas": {
         "projectId": "2f38aa9b-5f7a-497e-bfad-3bd8e3ecdaaa"
       }

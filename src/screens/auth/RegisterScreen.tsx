@@ -18,17 +18,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NavigationProp } from '@react-navigation/native';
-import { useAuth } from '../../contexts/AuthContext';
-import { GoogleSignInService } from '../../services/googleSignIn';
-import { Logo } from '../../components/Logo';
-import { useTheme } from '../../hooks/useTheme';
+import { useAuth } from '@/contexts/AuthContext';
+import { Logo } from '@/components/Logo';
+import { useTheme } from '@/hooks/useTheme';
 
 export function RegisterScreen() {
   const navigation = useNavigation<NavigationProp<any>>();
-  const { register, loginWithGoogle, isLoading, error, clearError } = useAuth();
+  const { register, isLoading, error, clearError } = useAuth();
   const { theme } = useTheme();
-
-  const isGoogleSignInAvailable = GoogleSignInService.isAvailable();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -95,22 +92,6 @@ export function RegisterScreen() {
       // Navigation will be handled by the auth state change
     } catch (error) {
       // Error is handled by the auth context
-    }
-  };
-
-  const handleGoogleRegister = async () => {
-    try {
-      clearError();
-      const result = await GoogleSignInService.signIn();
-      
-      if (result.success && result.idToken) {
-        await loginWithGoogle(result.idToken);
-        // Navigation will be handled by the auth state change
-      } else {
-        Alert.alert('Google Sign-In Failed', result.error || 'Unknown error');
-      }
-    } catch (error) {
-      Alert.alert('Google Sign-In Error', 'Failed to sign in with Google');
     }
   };
 
@@ -273,24 +254,6 @@ export function RegisterScreen() {
               <Text style={styles.registerButtonText}>Create Account</Text>
             )}
           </TouchableOpacity>
-
-          {isGoogleSignInAvailable && (
-            <>
-              <View style={styles.divider}>
-                <View style={[styles.dividerLine, { backgroundColor: theme.colors.border }]} />
-                <Text style={[styles.dividerText, { color: theme.colors.textSecondary }]}>OR</Text>
-                <View style={[styles.dividerLine, { backgroundColor: theme.colors.border }]} />
-              </View>
-
-              <TouchableOpacity
-                style={[styles.googleButton, { borderColor: theme.colors.border }, isLoading && styles.disabledButton]}
-                onPress={handleGoogleRegister}
-                disabled={isLoading}
-              >
-                <Text style={[styles.googleButtonText, { color: theme.colors.text }]}>Continue with Google</Text>
-              </TouchableOpacity>
-            </>
-          )}
 
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>Already have an account? </Text>

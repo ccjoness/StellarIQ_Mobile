@@ -3,20 +3,19 @@
  * Main application entry point
  */
 import '@expo/metro-runtime';
-import { useEffect } from 'react';
+
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Constants from 'expo-constants';
+
 
 // Authentication and navigation
-import { AuthProvider } from './src/contexts/AuthContext';
-import { WatchlistProvider } from './src/contexts/WatchlistContext';
-import { GoogleSignInService } from './src/services/googleSignIn';
-import { ThemeProvider } from './src/providers/ThemeProvider';
-import { useTheme } from './src/hooks/useTheme';
-import { AppNavigator } from './src/navigation/AppNavigator';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { WatchlistProvider } from '@/contexts/WatchlistContext';
+import { ThemeProvider } from '@/providers/ThemeProvider';
+import { useTheme } from '@/hooks/useTheme';
+import { AppNavigator } from '@/navigation/AppNavigator';
 
 // Theme-aware StatusBar component
 function ThemedStatusBar() {
@@ -36,20 +35,6 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
-  // Initialize Google Sign-In
-  useEffect(() => {
-    // Check if Google Sign-In is available
-    if (!GoogleSignInService.isAvailable()) {
-      console.warn('Google Sign-In not available in this environment (Expo Go)');
-      return;
-    }
-
-    // Get Google client ID from app config
-    const googleWebClientId = Constants.expoConfig?.extra?.googleWebClientId;
-    if (googleWebClientId && googleWebClientId !== 'your-google-web-client-id.googleusercontent.com') {
-      GoogleSignInService.configure(googleWebClientId);
-    }
-  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

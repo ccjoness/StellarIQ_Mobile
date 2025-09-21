@@ -18,16 +18,13 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import type { NavigationProp } from '@react-navigation/native';
 import { useAuth } from '@/contexts/AuthContext';
-import { GoogleSignInService } from '@/services/googleSignIn';
 import { Logo } from '@/components/Logo';
 import { useTheme } from '@/hooks/useTheme';
 
 export function LoginScreen() {
   const navigation = useNavigation<NavigationProp<any>>();
-  const { login, loginWithGoogle, isLoading, error, clearError } = useAuth();
+  const { login, isLoading, error, clearError } = useAuth();
   const { theme } = useTheme();
-
-  const isGoogleSignInAvailable = GoogleSignInService.isAvailable();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -45,22 +42,6 @@ export function LoginScreen() {
       // Navigation will be handled by the auth state change
     } catch (error) {
       // Error is handled by the auth context
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      clearError();
-      const result = await GoogleSignInService.signIn();
-      
-      if (result.success && result.idToken) {
-        await loginWithGoogle(result.idToken);
-        // Navigation will be handled by the auth state change
-      } else {
-        Alert.alert('Google Sign-In Failed', result.error || 'Unknown error');
-      }
-    } catch (error) {
-      Alert.alert('Google Sign-In Error', 'Failed to sign in with Google');
     }
   };
 
@@ -157,24 +138,6 @@ export function LoginScreen() {
               <Text style={styles.loginButtonText}>Sign In</Text>
             )}
           </TouchableOpacity>
-
-          {isGoogleSignInAvailable && (
-            <>
-              <View style={styles.divider}>
-                <View style={[styles.dividerLine, { backgroundColor: theme.colors.border }]} />
-                <Text style={[styles.dividerText, { color: theme.colors.textSecondary }]}>OR</Text>
-                <View style={[styles.dividerLine, { backgroundColor: theme.colors.border }]} />
-              </View>
-
-              <TouchableOpacity
-                style={[styles.googleButton, { borderColor: theme.colors.border }, isLoading && styles.disabledButton]}
-                onPress={handleGoogleLogin}
-                disabled={isLoading}
-              >
-                <Text style={[styles.googleButtonText, { color: theme.colors.text }]}>Continue with Google</Text>
-              </TouchableOpacity>
-            </>
-          )}
 
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>Don't have an account? </Text>
