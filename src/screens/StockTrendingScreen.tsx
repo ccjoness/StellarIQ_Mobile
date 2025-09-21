@@ -14,20 +14,20 @@ import { useTheme } from '@/hooks/useTheme';
 import { ApiService } from '@/services/api';
 import { FavoriteButton } from '@/components/FavoriteButton';
 
-interface TrendingStock {
-  ticker: string;
-  name?: string;
-  price: number;
-  change_amount: number;
-  change_percentage: number;
-  volume_humanized: string;
-  volume: number;
+interface StockOverview {
+  symbol: string;
+  name: string;
+  current_price: number;
+  change_percent_24h?: number;
+  volume_24h?: number;
+  market_cap?: number;
+  exchange?: string;
 }
 
 interface StockTrendingResponse {
-  trending: TrendingStock[];
-  gainers: TrendingStock[];
-  losers: TrendingStock[];
+  trending: StockOverview[];
+  gainers: StockOverview[];
+  losers: StockOverview[];
 }
 
 export default function StockTrendingScreen() {
@@ -51,19 +51,19 @@ export default function StockTrendingScreen() {
     } catch (error) {
       console.error('Error loading trending data:', error);
       // Fallback to popular stocks
-      // const fallbackStocks: TrendingStock[] = [
-      //   { symbol: 'AAPL', name: 'Apple Inc.', current_price: 150.00, change_percent_24h: 2.5, volume_24h: 50000000, market_cap: 2500000000000 },
-      //   { symbol: 'TSLA', name: 'Tesla Inc.', current_price: 200.00, change_percent_24h: -1.2, volume_24h: 30000000, market_cap: 800000000000 },
-      //   { symbol: 'GOOGL', name: 'Alphabet Inc.', current_price: 120.00, change_percent_24h: 1.8, volume_24h: 25000000, market_cap: 1500000000000 },
-      //   { symbol: 'MSFT', name: 'Microsoft Corp.', current_price: 300.00, change_percent_24h: 0.5, volume_24h: 20000000, market_cap: 2200000000000 },
-      //   { symbol: 'AMZN', name: 'Amazon.com Inc.', current_price: 130.00, change_percent_24h: -0.8, volume_24h: 35000000, market_cap: 1300000000000 },
-      // ];
+      const fallbackStocks: StockOverview[] = [
+        { symbol: 'AAPL', name: 'Apple Inc.', current_price: 150.00, change_percent_24h: 2.5, volume_24h: 50000000, market_cap: 2500000000000 },
+        { symbol: 'TSLA', name: 'Tesla Inc.', current_price: 200.00, change_percent_24h: -1.2, volume_24h: 30000000, market_cap: 800000000000 },
+        { symbol: 'GOOGL', name: 'Alphabet Inc.', current_price: 120.00, change_percent_24h: 1.8, volume_24h: 25000000, market_cap: 1500000000000 },
+        { symbol: 'MSFT', name: 'Microsoft Corp.', current_price: 300.00, change_percent_24h: 0.5, volume_24h: 20000000, market_cap: 2200000000000 },
+        { symbol: 'AMZN', name: 'Amazon.com Inc.', current_price: 130.00, change_percent_24h: -0.8, volume_24h: 35000000, market_cap: 1300000000000 },
+      ];
       
-      // setTrendingData({
-      //   trending: fallbackStocks,
-      //   gainers: fallbackStocks.filter(s => (s.change_percent_24h || 0) > 0),
-      //   losers: fallbackStocks.filter(s => (s.change_percent_24h || 0) < 0),
-      // });
+      setTrendingData({
+        trending: fallbackStocks,
+        gainers: fallbackStocks.filter(s => (s.change_percent_24h || 0) > 0),
+        losers: fallbackStocks.filter(s => (s.change_percent_24h || 0) < 0),
+      });
     } finally {
       setLoading(false);
     }
@@ -97,35 +97,56 @@ export default function StockTrendingScreen() {
     return `${sign}${value.toFixed(2)}%`;
   };
 
-  const renderStockItem = (item: TrendingStock, index: number) => (
+  const formatVolume = (value?: number) => {
+    if (!value) return 'N/A';
+    if (value >= 1e9) return `${(value / 1e9).toFixed(1)}B`;
+    if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
+    if (value >= 1e3) return `${(value / 1e3).toFixed(1)}K`;
+    return value.toString();
+  };
+
+  const formatMarketCap = (value?: number) => {
+    if (!value) return 'N/A';
+    if (value >= 1e12) return `${(value / 1e12).toFixed(1)}T`;
+    if (value >= 1e9) return `${(value / 1e9).toFixed(1)}B`;
+    if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
+    return value.toString();
+  };
+
+  const renderStockItem = (item: StockOverview, index: number) => (
     <TouchableOpacity
-      key={`${item.ticker}-${index}`}
+      key={`${item.symbol}-${index}`}
       style={[styles.stockItem, { backgroundColor: theme.colors.surface }]}
-      onPress={() => handleStockPress(item.ticker)}
+      onPress={() => handleStockPress(item.symbol)}
     >
       <View style={styles.stockHeader}>
         <View style={styles.stockInfo}>
-          <Text style={[styles.stockSymbol, { color: theme.colors.text }]}>{item.ticker}</Text>
+          <Text style={[styles.stockSymbol, { color: theme.colors.text }]}>{item.symbol}</Text>
           <Text style={[styles.stockName, { color: theme.colors.textSecondary }]} numberOfLines={1}>
             {item.name}
           </Text>
+          {item.exchange && (
+            <Text style={[styles.exchangeText, { color: theme.colors.textSecondary }]}>
+              {item.exchange}
+            </Text>
+          )}
         </View>
         <View style={styles.stockPrice}>
           <Text style={[styles.priceText, { color: theme.colors.text }]}>
-            {formatCurrency(item.price)}
+            {formatCurrency(item.current_price)}
           </Text>
-          {item.change_percentage !== undefined && (
+          {item.change_percent_24h !== undefined && (
             <Text style={[
               styles.changeText,
-              { color: item.change_percentage >= 0 ? theme.colors.success : theme.colors.error }
+              { color: item.change_percent_24h >= 0 ? theme.colors.success : theme.colors.error }
             ]}>
-              {formatPercentage(item.change_percentage)}
+              {formatPercentage(item.change_percent_24h)}
             </Text>
           )}
         </View>
         <View style={styles.stockActions}>
           <FavoriteButton
-            symbol={item.ticker}
+            symbol={item.symbol}
             marketType="stock"
             size={20}
             style={styles.favoriteButton}
@@ -139,16 +160,21 @@ export default function StockTrendingScreen() {
       </View>
       
       <View style={styles.stockDetails}>
-        {item.volume_humanized && (
+        {item.volume_24h && (
           <Text style={[styles.detailText, { color: theme.colors.textSecondary }]}>
-            Volume: {item.volume_humanized}
+            Volume: {formatVolume(item.volume_24h)}
+          </Text>
+        )}
+        {item.market_cap && (
+          <Text style={[styles.detailText, { color: theme.colors.textSecondary }]}>
+            Market Cap: {formatMarketCap(item.market_cap)}
           </Text>
         )}
       </View>
     </TouchableOpacity>
   );
 
-  const renderSection = (title: string, data: TrendingStock[], emptyMessage: string) => (
+  const renderSection = (title: string, data: StockOverview[], emptyMessage: string) => (
     <View style={styles.section}>
       <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>{title}</Text>
       {data.length > 0 ? (

@@ -6,20 +6,36 @@
     "platforms": ["android"],
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
-    "icon": "./assets/icon-1024-1024.png",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
     "assetBundlePatterns": [
       "**/*"
     ],
-    "splash": {
-      "image": "../assets/splash-4096-4096.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#1a3a5a"
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.stellariq.app",
+      "buildNumber": "1",
+      "splash": {
+        "image": "./assets/icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#1a3a5a",
+        "tabletImage": "./assets/icon.png"
+      },
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "background-fetch",
+          "remote-notification"
+        ]
+      }
     },
     "android": {
       "package": "com.stellariq.app",
       "versionCode": 1,
-      "backgroundColor": "#1a3a5a",
+      "splash": {
+        "image": "./assets/splash.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#1a3a5a"
+      },
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE",
@@ -28,8 +44,8 @@
         "ACCESS_NETWORK_STATE"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/android/adaptive-icon/foreground.png",
-        "backgroundImage": "./assets/android/adaptive-icon/background.png"
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#1a3a5a"
       }
     },
     "web": {
@@ -40,21 +56,14 @@
         "expo-notifications",
         {
           "color": "#ffffff"
-        },
-        "expo-splash-screen",
-        {
-          "android": {
-            "backgroundColor": "#1a3a5a",
-            "image": "./assets/splash-4096-4096.png",
-            "resizeMode": "contain"
-          }
         }
       ],
       "expo-font"
     ],
     "scheme": "stellariq",
     "extra": {
-      "apiUrl": "http://192.168.1.74:8000",
+      "apiUrl": "https://stellariq.app",
+      "googleWebClientId": "your-google-web-client-id.googleusercontent.com",
       "eas": {
         "projectId": "2f38aa9b-5f7a-497e-bfad-3bd8e3ecdaaa"
       }
