@@ -6,7 +6,7 @@
     "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon-1024-1024.png",
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -15,10 +15,10 @@
       "bundleIdentifier": "com.stellariq.app",
       "buildNumber": "1",
       "splash": {
-        "image": "./assets/icon.png",
+        "image": "./assets/splash-4096-4096.png",
         "resizeMode": "contain",
         "backgroundColor": "#1a3a5a",
-        "tabletImage": "./assets/icon.png"
+        "tabletImage": "./assets/icon-1024-1024.png"
       },
       "infoPlist": {
         "UIBackgroundModes": [
@@ -31,7 +31,7 @@
       "package": "com.stellariq.app",
       "versionCode": 1,
       "splash": {
-        "image": "./assets/splash.png",
+        "image": "./assets/splash-4096-4096.png",
         "resizeMode": "contain",
         "backgroundColor": "#1a3a5a"
       },
@@ -43,7 +43,7 @@
         "ACCESS_NETWORK_STATE"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/icon-1024-1024.png",
         "backgroundColor": "#1a3a5a"
       }
     },
@@ -55,13 +55,26 @@
         "expo-notifications",
         {
           "color": "#ffffff"
+        },
+        "expo-splash-screen",
+        {
+          "ios": {
+            "backgroundColor": "#1a3a5a",
+            "image": "./assets/splash-4096-4096.png",
+            "resizeMode": "cover"
+          },
+          "android": {
+            "backgroundColor": "#1a3a5a",
+            "image": "./assets/splash-4096-4096.png",
+            "imageWidth": 150
+          }
         }
       ],
       "expo-font"
     ],
     "scheme": "stellariq",
     "extra": {
-      "apiUrl": "https://stellariq.app",
+      "apiUrl": "http://192.168.1.74:8000",
       "googleWebClientId": "your-google-web-client-id.googleusercontent.com",
       "eas": {
         "projectId": "2f38aa9b-5f7a-497e-bfad-3bd8e3ecdaaa"
