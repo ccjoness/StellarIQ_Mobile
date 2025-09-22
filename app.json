@@ -2,9 +2,8 @@
   "expo": {
     "name": "StellarIQ",
     "slug": "stellariq",
-    "sdkVersion": "54.0.0",
-    "platforms": ["android"],
     "version": "1.0.0",
+    "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",
