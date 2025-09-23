@@ -66,16 +66,16 @@ backend/build/
 backend/*.egg-info/
 
 # Mobile specific
-mobile/node_modules/
-mobile/.expo/
-mobile/dist/
-mobile/npm-debug.*
-mobile/yarn-debug.*
-mobile/yarn-error.*
-mobile/.expo-shared/
-mobile/web-build/
-mobile/ios/
-mobile/android/
+node_modules/
+.expo/
+dist/
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.expo-shared/
+web-build/
+ios/
+android/
 
 # Docker
 .docker/
