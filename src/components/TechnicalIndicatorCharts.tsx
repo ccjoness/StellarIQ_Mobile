@@ -189,7 +189,7 @@ export function TechnicalIndicatorCharts({ symbol, marketType }: TechnicalIndica
           Technical Indicators (24h)
         </Text>
         <Text style={[styles.errorText, { color: theme.colors.error }]}>
-          Unable to load indicator data
+          Indicator data not found.
         </Text>
         {error && (
           <Text style={[styles.errorDetails, { color: theme.colors.textSecondary }]}>
@@ -219,6 +219,8 @@ export function TechnicalIndicatorCharts({ symbol, marketType }: TechnicalIndica
             <Text style={[styles.statusTitle, { color: conditionDisplay.color }]}>
               Market Status: {conditionDisplay.text}
             </Text>
+            </View>
+          <View style={styles.statusHeader}>
             <Text style={[styles.confidenceText, { color: theme.colors.textSecondary }]}>
               Confidence: {Math.round((analysisSummary?.confidence_score || 0) * 100)}%
             </Text>

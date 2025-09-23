@@ -45,7 +45,7 @@
     ],
     "scheme": "stellariq",
     "extra": {
-      "apiUrl": "https://stellariq.app",
+      "apiUrl": "http://192.168.1.74:8000",
       "googleWebClientId": "your-google-web-client-id.googleusercontent.com",
       "eas": {
         "projectId": "2f38aa9b-5f7a-497e-bfad-3bd8e3ecdaaa"
