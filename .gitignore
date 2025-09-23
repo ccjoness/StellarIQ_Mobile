@@ -148,3 +148,5 @@ jspm_packages/
 # Temporary folders
 tmp/
 temp/
+/stellariq-145b0-firebase-adminsdk-fbsvc-89eebc2c64.json
+/google-services.json

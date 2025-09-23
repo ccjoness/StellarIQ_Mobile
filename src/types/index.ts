@@ -534,3 +534,52 @@ export interface NotificationData {
     signal_type?: string;
   };
 }
+
+export interface DeviceToken {
+  id: number;
+  token: string;
+  device_type: 'ios' | 'android' | 'web';
+  device_id?: string;
+  device_name?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at?: string;
+  last_used_at?: string;
+}
+
+export interface DeviceTokenCreate {
+  token: string;
+  device_type: 'ios' | 'android' | 'web';
+  device_id?: string;
+  device_name?: string;
+}
+
+export interface NotificationHistory {
+  id: number;
+  title: string;
+  body: string;
+  notification_type: 'market_alert' | 'price_alert' | 'system';
+  channel: 'push' | 'email' | 'sms';
+  symbol?: string;
+  market_condition?: string;
+  confidence_score?: string;
+  status: 'pending' | 'sent' | 'failed' | 'read';
+  sent_at?: string;
+  read_at?: string;
+  error_message?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface NotificationSummary {
+  total_notifications: number;
+  unread_notifications: number;
+  recent_notifications: NotificationHistory[];
+}
+
+export interface NotificationPreferences {
+  alert_enabled: boolean;
+  alert_on_overbought: boolean;
+  alert_on_oversold: boolean;
+  alert_on_neutral: boolean;
+}

@@ -25,6 +25,11 @@ import {
   CryptoPortfolioCreate,
   CryptoPortfolioUpdate,
   TechnicalAnalysisSummary,
+  DeviceToken,
+  DeviceTokenCreate,
+  NotificationHistory,
+  NotificationSummary,
+  NotificationPreferences,
 } from '@/types';
 import {
   AuthResponse,
@@ -1129,6 +1134,65 @@ class ApiService {
       total: watchlistItems.length,
       device_id: 'mobile-app', // Default device ID for mobile app
     };
+  }
+
+  // Notification methods
+  async registerDeviceToken(tokenData: DeviceTokenCreate): Promise<DeviceToken> {
+    return this.request<DeviceToken>('/notifications/device-tokens', {
+      method: 'POST',
+      body: JSON.stringify(tokenData),
+    }, true);
+  }
+
+  async getDeviceTokens(): Promise<DeviceToken[]> {
+    return this.request<DeviceToken[]>('/notifications/device-tokens', {}, true);
+  }
+
+  async deleteDeviceToken(tokenId: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/notifications/device-tokens/${tokenId}`, {
+      method: 'DELETE',
+    }, true);
+  }
+
+  async getNotificationHistory(limit: number = 50, offset: number = 0): Promise<NotificationHistory[]> {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      offset: offset.toString(),
+    });
+    return this.request<NotificationHistory[]>(`/notifications/history?${params}`, {}, true);
+  }
+
+  async getNotificationSummary(): Promise<NotificationSummary> {
+    return this.request<NotificationSummary>('/notifications/summary', {}, true);
+  }
+
+  async markNotificationRead(notificationId: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/notifications/mark-read/${notificationId}`, {
+      method: 'POST',
+    }, true);
+  }
+
+  async updateNotificationPreferences(favoriteId: number, preferences: Partial<NotificationPreferences>): Promise<WatchlistItem> {
+    return this.request<WatchlistItem>(`/favorites/${favoriteId}/notifications`, {
+      method: 'PUT',
+      body: JSON.stringify(preferences),
+    }, true);
+  }
+
+  async testMarketAlert(symbol: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/notifications/test-alert/${symbol}`, {
+      method: 'POST',
+    }, true);
+  }
+
+  async getMonitoringStatus(): Promise<any> {
+    return this.request<any>('/notifications/monitoring-status', {}, true);
+  }
+
+  async triggerMonitoring(): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/notifications/trigger-monitoring', {
+      method: 'POST',
+    }, true);
   }
 }
 

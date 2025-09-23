@@ -10,6 +10,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { NOTIFICATION_CONFIG, STORAGE_KEYS } from '@/constants/config';
 import { NotificationData } from '@/types';
+import { apiService } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -25,8 +27,10 @@ Notifications.setNotificationHandler({
 interface NotificationContextType {
   expoPushToken: string | null;
   isPermissionGranted: boolean;
+  isRegistered: boolean;
   requestPermission: () => Promise<boolean>;
   sendLocalNotification: (data: NotificationData) => Promise<void>;
+  registerWithAPI: () => Promise<boolean>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -38,10 +42,19 @@ interface NotificationProviderProps {
 export function NotificationProvider({ children }: NotificationProviderProps) {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [isPermissionGranted, setIsPermissionGranted] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     initializeNotifications();
   }, []);
+
+  useEffect(() => {
+    // Register with API when user is authenticated and we have a token
+    if (isAuthenticated && expoPushToken && !isRegistered) {
+      registerWithAPI();
+    }
+  }, [isAuthenticated, expoPushToken, isRegistered]);
 
   const initializeNotifications = async () => {
     try {
@@ -127,11 +140,39 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     }
   };
 
+  const registerWithAPI = async (): Promise<boolean> => {
+    try {
+      if (!expoPushToken || !isAuthenticated) {
+        console.warn('Cannot register: missing token or not authenticated');
+        return false;
+      }
+
+      const deviceType = Platform.OS === 'ios' ? 'ios' : 'android';
+      const deviceName = `${Platform.OS} Device`;
+
+      await apiService.registerDeviceToken({
+        token: expoPushToken,
+        device_type: deviceType,
+        device_name: deviceName,
+      });
+
+      setIsRegistered(true);
+      console.log('Device token registered with API successfully');
+      return true;
+
+    } catch (error) {
+      console.error('Failed to register device token with API:', error);
+      return false;
+    }
+  };
+
   const value: NotificationContextType = {
     expoPushToken,
     isPermissionGranted,
+    isRegistered,
     requestPermission,
     sendLocalNotification,
+    registerWithAPI,
   };
 
   return (
