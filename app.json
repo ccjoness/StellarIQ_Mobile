@@ -27,8 +27,8 @@
         "ACCESS_NETWORK_STATE"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/android/adaptive-icon/foreground.png",
-        "backgroundImage": "./assets/android/adaptive-icon/background.png"
+        "foregroundImage": "./assets/adIc/foreground.png",
+        "backgroundImage": "./assets/adIc/background.png"
       }
     },
     "web": {
