@@ -2,7 +2,7 @@
  * Notification settings component for watchlist items
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  TextInput,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -25,13 +27,18 @@ interface NotificationSettingsProps {
 }
 
 export function NotificationSettings({ item, onUpdate, onClose }: NotificationSettingsProps) {
-  const { colors } = useTheme();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [preferences, setPreferences] = useState<NotificationPreferences>({
+    // Market condition alerts
     alert_enabled: item.alert_enabled || false,
     alert_on_overbought: item.alert_on_overbought || true,
     alert_on_oversold: item.alert_on_oversold || true,
     alert_on_neutral: item.alert_on_neutral || false,
+    // Price alerts
+    price_alert_enabled: item.price_alert_enabled || false,
+    alert_price_above: item.alert_price_above,
+    alert_price_below: item.alert_price_below,
   });
 
   const handleSave = async () => {
@@ -88,20 +95,28 @@ export function NotificationSettings({ item, onUpdate, onClose }: NotificationSe
     }
   };
 
-  const updatePreference = (key: keyof NotificationPreferences, value: boolean) => {
+  const updatePreference = (key: keyof NotificationPreferences, value: boolean | number | undefined) => {
     setPreferences(prev => ({
       ...prev,
       [key]: value,
     }));
   };
 
+  const updatePriceThreshold = (key: 'alert_price_above' | 'alert_price_below', value: string) => {
+    const numericValue = value === '' ? undefined : parseFloat(value);
+    if (value === '' || (!isNaN(numericValue!) && numericValue! > 0)) {
+      updatePreference(key, numericValue);
+    }
+  };
+
   const styles = StyleSheet.create({
     container: {
-      backgroundColor: colors.background,
+      backgroundColor: theme.colors.background,
       borderRadius: 12,
       padding: 20,
       margin: 20,
-      maxHeight: '80%',
+      maxHeight: '100%',
+      minWidth: "95%",
     },
     header: {
       flexDirection: 'row',
@@ -112,14 +127,14 @@ export function NotificationSettings({ item, onUpdate, onClose }: NotificationSe
     title: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: colors.text,
+      color: theme.colors.text,
     },
     closeButton: {
       padding: 4,
     },
     symbolText: {
       fontSize: 16,
-      color: colors.textSecondary,
+      color: theme.colors.textSecondary,
       marginBottom: 20,
     },
     settingRow: {
@@ -128,16 +143,16 @@ export function NotificationSettings({ item, onUpdate, onClose }: NotificationSe
       alignItems: 'center',
       paddingVertical: 12,
       borderBottomWidth: 1,
-      borderBottomColor: colors.border,
+      borderBottomColor: theme.colors.border,
     },
     settingLabel: {
       fontSize: 16,
-      color: colors.text,
+      color: theme.colors.text,
       flex: 1,
     },
     settingDescription: {
       fontSize: 14,
-      color: colors.textSecondary,
+      color: theme.colors.textSecondary,
       marginTop: 2,
     },
     buttonContainer: {
@@ -155,25 +170,54 @@ export function NotificationSettings({ item, onUpdate, onClose }: NotificationSe
       justifyContent: 'center',
     },
     primaryButton: {
-      backgroundColor: colors.primary,
+      backgroundColor: theme.colors.primary,
     },
     secondaryButton: {
-      backgroundColor: colors.surface,
+      backgroundColor: theme.colors.surface,
       borderWidth: 1,
-      borderColor: colors.border,
+      borderColor: theme.colors.border,
     },
     buttonText: {
       fontSize: 16,
       fontWeight: '600',
     },
     primaryButtonText: {
-      color: colors.background,
+      color: theme.colors.background,
     },
     secondaryButtonText: {
-      color: colors.text,
+      color: theme.colors.text,
     },
     disabledRow: {
       opacity: 0.5,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.colors.text,
+      marginTop: 20,
+      marginBottom: 10,
+    },
+    priceInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+    priceInput: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      fontSize: 16,
+      color: theme.colors.text,
+      backgroundColor: theme.colors.surface,
+      minWidth: 100,
+      textAlign: 'right',
+    },
+    currencySymbol: {
+      fontSize: 16,
+      color: theme.colors.text,
+      marginRight: 8,
     },
   });
 
@@ -182,11 +226,15 @@ export function NotificationSettings({ item, onUpdate, onClose }: NotificationSe
       <View style={styles.header}>
         <Text style={styles.title}>Notification Settings</Text>
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Ionicons name="close" size={24} color={colors.text} />
+          <Ionicons name="close" size={24} color={theme.colors.text} />
         </TouchableOpacity>
       </View>
 
       <Text style={styles.symbolText}>Configure alerts for {item.symbol}</Text>
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Market Condition Alerts Section */}
+        <Text style={styles.sectionTitle}>Market Condition Alerts</Text>
 
       <View style={styles.settingRow}>
         <View style={{ flex: 1 }}>
@@ -198,8 +246,8 @@ export function NotificationSettings({ item, onUpdate, onClose }: NotificationSe
         <Switch
           value={preferences.alert_enabled}
           onValueChange={(value) => updatePreference('alert_enabled', value)}
-          trackColor={{ false: colors.border, true: colors.primary }}
-          thumbColor={colors.background}
+          trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+          thumbColor={theme.colors.background}
         />
       </View>
 
@@ -214,8 +262,8 @@ export function NotificationSettings({ item, onUpdate, onClose }: NotificationSe
           value={preferences.alert_on_overbought}
           onValueChange={(value) => updatePreference('alert_on_overbought', value)}
           disabled={!preferences.alert_enabled}
-          trackColor={{ false: colors.border, true: colors.primary }}
-          thumbColor={colors.background}
+          trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+          thumbColor={theme.colors.background}
         />
       </View>
 
@@ -230,26 +278,98 @@ export function NotificationSettings({ item, onUpdate, onClose }: NotificationSe
           value={preferences.alert_on_oversold}
           onValueChange={(value) => updatePreference('alert_on_oversold', value)}
           disabled={!preferences.alert_enabled}
-          trackColor={{ false: colors.border, true: colors.primary }}
-          thumbColor={colors.background}
+          trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+          thumbColor={theme.colors.background}
         />
       </View>
 
-      <View style={[styles.settingRow, !preferences.alert_enabled && styles.disabledRow]}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.settingLabel}>Neutral Alerts</Text>
-          <Text style={styles.settingDescription}>
-            Alert when the stock returns to neutral conditions
-          </Text>
+        <View style={[styles.settingRow, !preferences.alert_enabled && styles.disabledRow]}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.settingLabel}>Neutral Alerts</Text>
+            <Text style={styles.settingDescription}>
+              Alert when the stock returns to neutral conditions
+            </Text>
+          </View>
+          <Switch
+            value={preferences.alert_on_neutral}
+            onValueChange={(value) => updatePreference('alert_on_neutral', value)}
+            disabled={!preferences.alert_enabled}
+            trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+            thumbColor={theme.colors.background}
+          />
         </View>
-        <Switch
-          value={preferences.alert_on_neutral}
-          onValueChange={(value) => updatePreference('alert_on_neutral', value)}
-          disabled={!preferences.alert_enabled}
-          trackColor={{ false: colors.border, true: colors.primary }}
-          thumbColor={colors.background}
-        />
-      </View>
+
+        {/* Price Alerts Section */}
+        <Text style={styles.sectionTitle}>Price Alerts</Text>
+
+        <View style={styles.settingRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.settingLabel}>Enable Price Alerts</Text>
+            <Text style={styles.settingDescription}>
+              Get notified when price reaches your target levels
+            </Text>
+          </View>
+          <Switch
+            value={preferences.price_alert_enabled}
+            onValueChange={(value) => updatePreference('price_alert_enabled', value)}
+            trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+            thumbColor={theme.colors.background}
+          />
+        </View>
+
+        <View style={[styles.settingRow, !preferences.price_alert_enabled && styles.disabledRow]}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.settingLabel}>Alert When Price Goes Above</Text>
+            <Text style={styles.settingDescription}>
+              Set a price threshold for upward alerts
+            </Text>
+          </View>
+          <View style={styles.priceInputContainer}>
+            <Text style={styles.currencySymbol}>$</Text>
+            <TextInput
+              style={styles.priceInput}
+              value={preferences.alert_price_above?.toString() || ''}
+              onChangeText={(value) => updatePriceThreshold('alert_price_above', value)}
+              placeholder="0.00"
+              placeholderTextColor={theme.colors.textSecondary}
+              keyboardType="decimal-pad"
+              editable={preferences.price_alert_enabled}
+            />
+          </View>
+        </View>
+
+        <View style={[styles.settingRow, !preferences.price_alert_enabled && styles.disabledRow]}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.settingLabel}>Alert When Price Goes Below</Text>
+            <Text style={styles.settingDescription}>
+              Set a price threshold for downward alerts
+            </Text>
+          </View>
+          <View style={styles.priceInputContainer}>
+            <Text style={styles.currencySymbol}>$</Text>
+            <TextInput
+              style={styles.priceInput}
+              value={preferences.alert_price_below?.toString() || ''}
+              onChangeText={(value) => updatePriceThreshold('alert_price_below', value)}
+              placeholder="0.00"
+              placeholderTextColor={theme.colors.textSecondary}
+              keyboardType="decimal-pad"
+              editable={preferences.price_alert_enabled}
+            />
+          </View>
+        </View>
+
+        {item.current_price && (
+          <View style={styles.settingRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.settingLabel}>Current Price</Text>
+              <Text style={styles.settingDescription}>
+                ${item.current_price.toFixed(2)}
+              </Text>
+            </View>
+          </View>
+        )}
+      </ScrollView>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
@@ -258,7 +378,7 @@ export function NotificationSettings({ item, onUpdate, onClose }: NotificationSe
           disabled={loading || !preferences.alert_enabled}
         >
           {loading ? (
-            <ActivityIndicator size="small" color={colors.text} />
+            <ActivityIndicator size="small" color={theme.colors.text} />
           ) : (
             <Text style={[styles.buttonText, styles.secondaryButtonText]}>
               Test Alert
@@ -272,7 +392,7 @@ export function NotificationSettings({ item, onUpdate, onClose }: NotificationSe
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator size="small" color={colors.background} />
+            <ActivityIndicator size="small" color={theme.colors.background} />
           ) : (
             <Text style={[styles.buttonText, styles.primaryButtonText]}>
               Save Settings

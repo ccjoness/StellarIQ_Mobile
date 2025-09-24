@@ -56,15 +56,15 @@ export default function WatchlistScreen() {
 
         <View style={styles.alertsContainer}>
           <Ionicons
-            name={item.alert_enabled ? 'notifications' : 'notifications-off'}
+            name={item.alert_enabled || item.price_alert_enabled ? 'notifications' : 'notifications-off'}
             size={16}
-            color={item.alert_enabled ? theme.colors.primary : theme.colors.textSecondary}
+            color={item.alert_enabled || item.price_alert_enabled ? theme.colors.primary : theme.colors.textSecondary}
           />
           <Text style={[
             styles.alertsText,
-            { color: item.alert_enabled ? theme.colors.primary : theme.colors.textSecondary }
+            { color: item.alert_enabled || item.price_alert_enabled ? theme.colors.primary : theme.colors.textSecondary }
           ]}>
-            {item.alert_enabled ? 'Alerts On' : 'Alerts Off'}
+            {item.alert_enabled || item.price_alert_enabled ? 'Alerts On' : 'Alerts Off'}
           </Text>
         </View>
       </View>

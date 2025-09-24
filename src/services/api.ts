@@ -1034,12 +1034,23 @@ class ApiService {
       id: fav.id,
       ticker_id: fav.id,
       symbol: fav.symbol,
-      name: fav.symbol, // Backend doesn't provide name, use symbol
+      name: fav.name || fav.symbol,
       market_type: fav.asset_type,
       exchange: fav.exchange || '',
-      alert_enabled: false,
-      alert_price_above: null,
-      alert_price_below: null,
+      // Market condition alerts
+      alert_enabled: fav.alert_enabled || false,
+      alert_on_overbought: fav.alert_on_overbought || false,
+      alert_on_oversold: fav.alert_on_oversold || false,
+      alert_on_neutral: fav.alert_on_neutral || false,
+      last_alert_state: fav.last_alert_state,
+      last_alert_sent: fav.last_alert_sent,
+      // Price alerts
+      price_alert_enabled: fav.price_alert_enabled || false,
+      alert_price_above: fav.alert_price_above,
+      alert_price_below: fav.alert_price_below,
+      last_price_alert_sent: fav.last_price_alert_sent,
+      // Current price data
+      current_price: fav.current_price,
       created_at: fav.created_at,
     })) || [];
 
@@ -1055,7 +1066,16 @@ class ApiService {
     const body = {
       symbol: data.symbol,
       asset_type: data.market_type, // map market_type to asset_type
-      notes: '', // optional field
+      name: data.symbol, // Use symbol as name for now
+      // Market condition alerts
+      alert_enabled: data.alert_enabled || false,
+      alert_on_overbought: data.alert_on_overbought || false,
+      alert_on_oversold: data.alert_on_oversold || false,
+      alert_on_neutral: data.alert_on_neutral || false,
+      // Price alerts
+      price_alert_enabled: data.price_alert_enabled || false,
+      alert_price_above: data.alert_price_above,
+      alert_price_below: data.alert_price_below,
     };
 
     const favoriteResponse = await this.request<any>('/favorites/', {
@@ -1068,10 +1088,21 @@ class ApiService {
       id: favoriteResponse.id,
       ticker_id: favoriteResponse.id,
       symbol: favoriteResponse.symbol,
-      name: favoriteResponse.symbol,
+      name: favoriteResponse.name || favoriteResponse.symbol,
       market_type: favoriteResponse.asset_type,
       exchange: favoriteResponse.exchange || '',
-      alert_enabled: false,
+      // Market condition alerts
+      alert_enabled: favoriteResponse.alert_enabled || false,
+      alert_on_overbought: favoriteResponse.alert_on_overbought || false,
+      alert_on_oversold: favoriteResponse.alert_on_oversold || false,
+      alert_on_neutral: favoriteResponse.alert_on_neutral || false,
+      last_alert_state: favoriteResponse.last_alert_state,
+      last_alert_sent: favoriteResponse.last_alert_sent,
+      // Price alerts
+      price_alert_enabled: favoriteResponse.price_alert_enabled || false,
+      alert_price_above: favoriteResponse.alert_price_above,
+      alert_price_below: favoriteResponse.alert_price_below,
+      last_price_alert_sent: favoriteResponse.last_price_alert_sent,
       created_at: favoriteResponse.created_at,
     };
   }
@@ -1173,10 +1204,46 @@ class ApiService {
   }
 
   async updateNotificationPreferences(favoriteId: number, preferences: Partial<NotificationPreferences>): Promise<WatchlistItem> {
-    return this.request<WatchlistItem>(`/favorites/${favoriteId}/notifications`, {
+    // Map notification preferences to backend format
+    const body = {
+      // Market condition alerts
+      alert_enabled: preferences.alert_enabled,
+      alert_on_overbought: preferences.alert_on_overbought,
+      alert_on_oversold: preferences.alert_on_oversold,
+      alert_on_neutral: preferences.alert_on_neutral,
+      // Price alerts
+      price_alert_enabled: preferences.price_alert_enabled,
+      alert_price_above: preferences.alert_price_above,
+      alert_price_below: preferences.alert_price_below,
+    };
+
+    const response = await this.request<any>(`/favorites/${favoriteId}/notifications`, {
       method: 'PUT',
-      body: JSON.stringify(preferences),
+      body: JSON.stringify(body),
     }, true);
+
+    // Transform response to WatchlistItem format
+    return {
+      id: response.id,
+      ticker_id: response.id,
+      symbol: response.symbol,
+      name: response.name || response.symbol,
+      market_type: response.asset_type,
+      exchange: response.exchange || '',
+      // Market condition alerts
+      alert_enabled: response.alert_enabled || false,
+      alert_on_overbought: response.alert_on_overbought || false,
+      alert_on_oversold: response.alert_on_oversold || false,
+      alert_on_neutral: response.alert_on_neutral || false,
+      last_alert_state: response.last_alert_state,
+      last_alert_sent: response.last_alert_sent,
+      // Price alerts
+      price_alert_enabled: response.price_alert_enabled || false,
+      alert_price_above: response.alert_price_above,
+      alert_price_below: response.alert_price_below,
+      last_price_alert_sent: response.last_price_alert_sent,
+      created_at: response.created_at,
+    };
   }
 
   async testMarketAlert(symbol: string): Promise<{ message: string }> {

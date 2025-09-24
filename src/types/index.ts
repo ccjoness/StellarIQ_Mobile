@@ -391,12 +391,20 @@ export interface WatchlistItem {
   name: string;
   market_type: 'stock' | 'crypto';
   exchange?: string;
+  // Market condition alerts
   alert_enabled: boolean;
   alert_on_oversold?: boolean;
   alert_on_overbought?: boolean;
   alert_on_neutral?: boolean;
   last_alert_state?: string;
   last_alert_sent?: string;
+  // Price alerts
+  price_alert_enabled?: boolean;
+  alert_price_above?: number;
+  alert_price_below?: number;
+  last_price_alert_sent?: string;
+  // Current price data
+  current_price?: number;
   created_at: string;
   updated_at?: string;
 }
@@ -405,10 +413,15 @@ export interface WatchlistItemCreate {
   symbol: string;
   market_type: 'stock' | 'crypto';
   device_id?: string;
+  // Market condition alerts
   alert_enabled?: boolean;
   alert_on_oversold?: boolean;
   alert_on_overbought?: boolean;
   alert_on_neutral?: boolean;
+  // Price alerts
+  price_alert_enabled?: boolean;
+  alert_price_above?: number;
+  alert_price_below?: number;
 }
 
 export interface WatchlistResponse {
@@ -578,8 +591,13 @@ export interface NotificationSummary {
 }
 
 export interface NotificationPreferences {
+  // Market condition alerts
   alert_enabled: boolean;
   alert_on_overbought: boolean;
   alert_on_oversold: boolean;
   alert_on_neutral: boolean;
+  // Price alerts
+  price_alert_enabled: boolean;
+  alert_price_above?: number;
+  alert_price_below?: number;
 }
