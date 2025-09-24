@@ -14,12 +14,13 @@ import {
 } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
+// import { Ionicons } from '@expo/vector-icons';
 
 import { useTheme } from '@/hooks/useTheme';
 import { apiService } from '@/services/api';
-import { RootStackParamList } from '@/types';
+import { RootStackParamList, WatchlistItem } from '@/types';
 import { FavoriteButton } from '@/components/FavoriteButton';
+import { AlertButton } from '@/components/AlertButton';
 import { TechnicalIndicatorCharts } from '@/components/TechnicalIndicatorCharts';
 import { CandlestickChart } from '@/components/CandlestickChart';
 import { NotificationSettings } from '@/components/NotificationSettings';
@@ -35,7 +36,7 @@ export default function TickerDetailScreen() {
   const { symbol, market_type } = route.params;
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [showNotificationSettings, setShowNotificationSettings] = useState(false);
-  const { items: watchlistItems, isInWatchlist, refreshWatchlist } = useWatchlist();
+  const { items: watchlistItems, isInWatchlist, updateWatchlistItem } = useWatchlist();
 
   const {
     data: tickerDetail,
@@ -55,8 +56,8 @@ export default function TickerDetailScreen() {
     setShowNotificationSettings(true);
   };
 
-  const handleNotificationUpdate = () => {
-    refreshWatchlist();
+  const handleNotificationUpdate = (updatedItem: WatchlistItem) => {
+    updateWatchlistItem(updatedItem);
     setShowNotificationSettings(false);
   };
 
@@ -88,7 +89,10 @@ export default function TickerDetailScreen() {
                 style={styles.notificationButton}
                 onPress={handleNotificationSettings}
               >
-                <Ionicons name="notifications-outline" size={28} color={theme.colors.primary} />
+                <AlertButton
+                  symbol={ticker.symbol}
+                  size={28}
+                />
               </TouchableOpacity>
             )}
             <View

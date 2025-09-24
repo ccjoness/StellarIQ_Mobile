@@ -4,7 +4,7 @@
 
 import { TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useWatchlist } from '../contexts/WatchlistContext';
+import { useWatchlist } from '@/contexts/WatchlistContext';
 
 interface FavoriteButtonProps {
   symbol: string;

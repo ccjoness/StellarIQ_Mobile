@@ -22,7 +22,13 @@ import { WatchlistItem } from '@/types';
 export default function WatchlistScreen() {
   const { theme } = useTheme();
   const navigation = useNavigation();
-  const { items: watchlistItems, isLoading, error, refreshWatchlist } = useWatchlist();
+  const {
+    items: watchlistItems,
+    isLoading,
+    error,
+    refreshWatchlist,
+    hasAnyAlertsEnabled
+  } = useWatchlist();
 
   const handleTickerPress = (item: WatchlistItem) => {
     (navigation as any).navigate('TickerDetail', {
@@ -56,15 +62,15 @@ export default function WatchlistScreen() {
 
         <View style={styles.alertsContainer}>
           <Ionicons
-            name={item.alert_enabled || item.price_alert_enabled ? 'notifications' : 'notifications-off'}
+            name={hasAnyAlertsEnabled(item.symbol) ? 'notifications' : 'notifications-off'}
             size={16}
-            color={item.alert_enabled || item.price_alert_enabled ? theme.colors.primary : theme.colors.textSecondary}
+            color={hasAnyAlertsEnabled(item.symbol) ? theme.colors.primary : theme.colors.textSecondary}
           />
           <Text style={[
             styles.alertsText,
-            { color: item.alert_enabled || item.price_alert_enabled ? theme.colors.primary : theme.colors.textSecondary }
+            { color: hasAnyAlertsEnabled(item.symbol) ? theme.colors.primary : theme.colors.textSecondary }
           ]}>
-            {item.alert_enabled || item.price_alert_enabled ? 'Alerts On' : 'Alerts Off'}
+            {hasAnyAlertsEnabled(item.symbol) ? 'Alerts On' : 'Alerts Off'}
           </Text>
         </View>
       </View>
