@@ -24,7 +24,8 @@
         "VIBRATE",
         "WAKE_LOCK",
         "INTERNET",
-        "ACCESS_NETWORK_STATE"
+        "ACCESS_NETWORK_STATE",
+        "NOTIFICATION"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adIc/foreground.png",
