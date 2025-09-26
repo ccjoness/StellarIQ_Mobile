@@ -36,6 +36,7 @@ import {ResetPasswordScreen} from '@/screens/auth/ResetPasswordScreen';
 
 // Import debug screen
 import DebugScreen from '@/screens/DebugScreen';
+import {NotificationDebugScreen} from '@/screens/NotificationDebugScreen';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -285,6 +286,16 @@ export function AppNavigator() {
                 component={DebugScreen}
                 options={{
                     title: 'API Debug',
+                    headerTitleAlign: 'center',
+                    headerRight: () => <HeaderLogo/>,
+                    headerBackTitle: 'Back',
+                }}
+            />
+            <Stack.Screen
+                name="NotificationDebug"
+                component={NotificationDebugScreen}
+                options={{
+                    title: 'Notification Debug',
                     headerTitleAlign: 'center',
                     headerRight: () => <HeaderLogo/>,
                     headerBackTitle: 'Back',

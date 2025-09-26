@@ -46,34 +46,57 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    console.log('🔧 NotificationProvider: Initializing...');
     initializeNotifications();
   }, []);
 
   useEffect(() => {
+    console.log('🔧 NotificationProvider: Auth/Token state changed:', {
+      isAuthenticated,
+      hasToken: !!expoPushToken,
+      isRegistered,
+      tokenPreview: expoPushToken ? `${expoPushToken.substring(0, 30)}...` : null
+    });
+
     // Register with API when user is authenticated and we have a token
     if (isAuthenticated && expoPushToken && !isRegistered) {
+      console.log('🚀 NotificationProvider: Attempting to register with API...');
       registerWithAPI();
     }
   }, [isAuthenticated, expoPushToken, isRegistered]);
 
   const initializeNotifications = async () => {
     try {
+      console.log('🔧 NotificationProvider: Starting initialization...');
+      console.log('🔧 Device info:', {
+        isDevice: Device.isDevice,
+        platform: Platform.OS,
+        deviceName: Device.deviceName,
+        modelName: Device.modelName
+      });
+
       // Check if we're on a physical device
       if (!Device.isDevice) {
-        console.warn('Push notifications only work on physical devices');
+        console.warn('⚠️ Push notifications only work on physical devices');
         return;
       }
 
       // Check existing permissions
+      console.log('🔧 Checking existing permissions...');
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      console.log('🔧 Permission status:', existingStatus);
       setIsPermissionGranted(existingStatus === 'granted');
 
       if (existingStatus === 'granted') {
+        console.log('✅ Permissions already granted, setting up push token...');
         await setupPushToken();
+      } else {
+        console.log('⚠️ Permissions not granted yet. User needs to grant permissions.');
       }
 
       // Set up notification channel for Android
       if (Platform.OS === 'android') {
+        console.log('🔧 Setting up Android notification channel...');
         await Notifications.setNotificationChannelAsync(NOTIFICATION_CONFIG.CHANNEL_ID, {
           name: NOTIFICATION_CONFIG.CHANNEL_NAME,
           description: NOTIFICATION_CONFIG.CHANNEL_DESCRIPTION,
@@ -81,9 +104,12 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
           vibrationPattern: [0, 250, 250, 250],
           lightColor: '#6366f1',
         });
+        console.log('✅ Android notification channel configured');
       }
+
+      console.log('✅ NotificationProvider initialization complete');
     } catch (error) {
-      console.error('Failed to initialize notifications:', error);
+      console.error('❌ Failed to initialize notifications:', error);
     }
   };
 

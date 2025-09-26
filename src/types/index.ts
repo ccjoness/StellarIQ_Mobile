@@ -453,6 +453,7 @@ export type RootStackParamList = {
   StockCategories: undefined;
   StockTrending: undefined;
   Debug: undefined;
+  NotificationDebug: undefined;
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
