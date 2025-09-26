@@ -14,6 +14,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { WatchlistProvider } from '@/contexts/WatchlistContext';
 import { ThemeProvider } from '@/providers/ThemeProvider';
+import { NotificationProvider } from '@/providers/NotificationProvider';
 import { useTheme } from '@/hooks/useTheme';
 import { AppNavigator } from '@/navigation/AppNavigator';
 
@@ -40,14 +41,16 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <AuthProvider>
-          <WatchlistProvider>
-            <ThemeProvider>
-              <NavigationContainer>
-                <AppNavigator />
-                <ThemedStatusBar />
-              </NavigationContainer>
-            </ThemeProvider>
-          </WatchlistProvider>
+          <NotificationProvider>
+            <WatchlistProvider>
+              <ThemeProvider>
+                <NavigationContainer>
+                  <AppNavigator />
+                  <ThemedStatusBar />
+                </NavigationContainer>
+              </ThemeProvider>
+            </WatchlistProvider>
+          </NotificationProvider>
         </AuthProvider>
       </SafeAreaProvider>
     </QueryClientProvider>
