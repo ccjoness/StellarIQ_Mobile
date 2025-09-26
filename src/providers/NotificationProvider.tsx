@@ -85,13 +85,25 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       console.log('🔧 Checking existing permissions...');
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       console.log('🔧 Permission status:', existingStatus);
-      setIsPermissionGranted(existingStatus === 'granted');
 
       if (existingStatus === 'granted') {
         console.log('✅ Permissions already granted, setting up push token...');
+        setIsPermissionGranted(true);
         await setupPushToken();
       } else {
-        console.log('⚠️ Permissions not granted yet. User needs to grant permissions.');
+        console.log('⚠️ Permissions not granted, requesting permissions...');
+        // Automatically request permissions
+        const { status: newStatus } = await Notifications.requestPermissionsAsync();
+        console.log('🔧 New permission status:', newStatus);
+        const granted = newStatus === 'granted';
+        setIsPermissionGranted(granted);
+
+        if (granted) {
+          console.log('✅ Permissions granted! Setting up push token...');
+          await setupPushToken();
+        } else {
+          console.log('❌ Permissions denied by user');
+        }
       }
 
       // Set up notification channel for Android

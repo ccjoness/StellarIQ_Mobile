@@ -15,12 +15,15 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useTheme } from '@/hooks/useTheme';
+import { useNotificationSetup } from '@/hooks/useNotificationSetup';
 import { FavoriteButton } from '@/components/FavoriteButton';
+import { NotificationSetupCard } from '@/components/NotificationSetupCard';
 // import { ApiService } from '@/services/api';
 
 export default function HomeScreen() {
   const { theme } = useTheme();
   const navigation = useNavigation();
+  const { showSetupCard, dismissSetupCard } = useNotificationSetup();
   // const [loading, setLoading] = useState(true);
   //
   // const apiService = new ApiService();
@@ -80,7 +83,13 @@ export default function HomeScreen() {
           </View>
         </View>
       </View>
-      
+
+      {/* Notification Setup Card */}
+      {showSetupCard && (
+        <NotificationSetupCard
+          onDismiss={dismissSetupCard}
+        />
+      )}
 
       {/* Popular Stocks */}
       <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
