@@ -16,16 +16,10 @@ import {
 } from 'react-native';
 import {useAuth} from '@/contexts/AuthContext';
 import {useTheme} from '@/hooks/useTheme';
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {RootStackParamList} from '@/types';
-
-type ProfileScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export function ProfileScreen() {
     const {user, updateProfile, changePassword, logout, isLoading, error, clearError} = useAuth();
     const {theme, themeMode, setThemeMode} = useTheme();
-    const navigation = useNavigation<ProfileScreenNavigationProp>();
 
     const [isEditing, setIsEditing] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -109,7 +103,6 @@ export function ProfileScreen() {
         const hasUpperCase = /[A-Z]/.test(passwordData.newPassword);
         const hasLowerCase = /[a-z]/.test(passwordData.newPassword);
         const hasNumbers = /\d/.test(passwordData.newPassword);
-        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(passwordData.newPassword);
 
         if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
             Alert.alert(
@@ -489,13 +482,6 @@ export function ProfileScreen() {
             )}
 
             <View style={[styles.section, {backgroundColor: theme.colors.surface}]}>
-                <TouchableOpacity
-                    style={styles.debugButton}
-                    onPress={() => navigation.navigate('NotificationDebug')}
-                >
-                    <Text style={styles.debugButtonText}>🔧 Notification Debug</Text>
-                </TouchableOpacity>
-
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                     <Text style={styles.logoutButtonText}>Logout</Text>
                 </TouchableOpacity>
@@ -635,18 +621,6 @@ const styles = StyleSheet.create({
     saveButtonText: {
         color: '#FFFFFF',
         fontSize: 14,
-        fontWeight: '600',
-    },
-    debugButton: {
-        backgroundColor: '#6366F1',
-        padding: 16,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    debugButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
         fontWeight: '600',
     },
     logoutButton: {
