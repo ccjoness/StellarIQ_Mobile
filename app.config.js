@@ -1,0 +1,55 @@
+export default {
+  expo: {
+    name: "StellarIQ",
+    slug: "stellariq",
+    version: "1.0.0",
+    sdkVersion: "54.0.0",
+    orientation: "portrait",
+    userInterfaceStyle: "automatic",
+    icon: "./assets/icon.png",
+    splash: {
+      image: "./assets/splash.png",
+      resizeMode: "cover",
+      backgroundColor: "#1a3a5a"
+    },
+    assetBundlePatterns: [
+      "**/*"
+    ],
+    android: {
+      package: "com.stellariq.app",
+      versionCode: 1,
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
+      permissions: [
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "WAKE_LOCK",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "NOTIFICATION"
+      ],
+      adaptiveIcon: {
+        foregroundImage: "./assets/adIc/foreground.png",
+        backgroundImage: "./assets/adIc/background.png"
+      }
+    },
+    web: {
+      bundler: "metro"
+    },
+    plugins: [
+      [
+        "expo-notifications",
+        {
+          color: "#ffffff"
+        }
+      ],
+      "expo-font"
+    ],
+    scheme: "stellariq",
+    extra: {
+      apiUrl: process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.100:8000",
+      eas: {
+        projectId: "2f38aa9b-5f7a-497e-bfad-3bd8e3ecdaaa"
+      }
+    }
+  }
+};
