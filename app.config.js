@@ -46,7 +46,7 @@ export default {
     ],
     scheme: "stellariq",
     extra: {
-      apiUrl: process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.100:8000",
+      apiUrl: process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.74:8000",
       eas: {
         projectId: "2f38aa9b-5f7a-497e-bfad-3bd8e3ecdaaa"
       }
